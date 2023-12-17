@@ -48,12 +48,11 @@ class CustomCarEnv(gym.Env):
 
 
         
-        print(reward)
         return reward
 
     def step(self, action):
         self.AI_node.publish_to_unity(action)
-        # 实现根据动作更新环境状态的逻辑
+
         unity_data = self.AI_node.get_latest_data()
         
         if self.state is None:
@@ -77,14 +76,12 @@ class CustomCarEnv(gym.Env):
 
         return self.state, reward, terminated, truncated, info
 
+
     def reset(self,seed=None, options=None):
         self.AI_node.publish_to_unity_RESET()
         unity_data = self.AI_node.get_latest_data()
-        while unity_data is None:
-            time.sleep(0.1)
-            unity_data = self.AI_node.get_latest_data()
-        # self.state = self._process_data(unity_data)
-        self.state = [1.1,1.1]
-        # print("Game reset!")
-        return self.state
+        self.state = self._process_data(unity_data)
+        print(len(self.state))
+
+        return self.state, {}
 
