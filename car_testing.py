@@ -53,11 +53,34 @@ class AiNode(Node):
                 flat_list.append(value)
         return np.array(flat_list, dtype=float)
     
+    def get_yaw_from_quaternion(self, z, w):
+        """从四元数的 z 和 w 分量中提取偏航角（Y 轴旋转）"""
+        return np.degrees(2 * np.arctan2(z, w))
+    
+    def get_direction_vector(self, current_position, target_position):
+        """计算从当前位置指向目标位置的向量"""
+        return np.array(target_position) - np.array(current_position)
+    
+    def get_angle_to_target(self, car_yaw, direction_vector):
+        # 计算车辆朝向与目标方向之间的角度差
+        target_yaw = np.arctan2(direction_vector[1], direction_vector[0])
+        angle_diff = target_yaw - np.radians(car_yaw)
+        return np.abs(np.degrees(angle_diff)) % 360
+    
     def collect_unity_data(self, unityState):
         self.state_detect, token = transfer_obs(unityState)
-        if self.state_detect == 1:
-            print(token['car_target_distance'])
-            self._process_data(token)
+        if self.state_detect == 1: 
+            
+            car_pos = token['car_pos']
+            target_pos = token['target_pos']
+            car_quaternion = token['car_quaternion']
+            car_yaw = self.get_yaw_from_quaternion(car_quaternion[0], car_quaternion[1])
+            direction_vector = self.get_direction_vector(car_pos, target_pos)
+            angle_to_target = self.get_angle_to_target(car_yaw, direction_vector)
+            print(angle_to_target)
+            del token['car_quaternion']
+            # self._process_data(token)
+
             # new_frame = eval(token)
             # print("frame length : ", len(new_frame))
             # action = []

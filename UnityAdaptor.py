@@ -24,12 +24,12 @@ def get_90_smallest_lidar_values(lidar_data):
     chunk_size = len(lidar_data) // 15
     return [min(lidar_data[i:i + chunk_size]) for i in range(0, len(lidar_data), chunk_size)]
 
+#  將lidar vector做字串處理
 def parse_direction_string(direction_str):
-    # 去掉括号并按逗号分割
     stripped_str = direction_str.strip("()")
-    # 将字符串分割为各个部分，并转换为浮点数
     return [float(num) for num in stripped_str.split(",")]
 
+#  將lidar distance和vector壓縮成12等份，並挑出12等份最小的數值
 def get_smallest_lidar_values_with_direction(lidar_data, lidar_directions):
     """
     Divide the lidar data into 15 chunks and return the smallest value from each chunk
@@ -86,21 +86,18 @@ def quaternion_to_car_orientation(x, y, z, w):
     return yaw_degrees
 
 def calculate_angle(coord1, coord2):
-    # 将列表转换为 NumPy 数组
     vector1 = np.array(coord1)
     vector2 = np.array(coord2)
 
-    # 计算向量的点积
     dot_product = np.dot(vector1, vector2)
 
-    # 计算向量的模
     norm1 = np.linalg.norm(vector1)
     norm2 = np.linalg.norm(vector2)
 
-    # 计算夹角
+    # 算夾角
     angle = np.arccos(dot_product / (norm1 * norm2))
 
-    # 将弧度转换为度
+    # rad轉成度
     angle_deg = np.degrees(angle)
 
     return angle_deg
@@ -112,7 +109,10 @@ def transfer_obs(obs):
     """
     Process observation data from Unity and return a token and a flag indicating lidar detection.
     """
-    obs = parse_json_to_dict(obs)
+    try:
+        obs = parse_json_to_dict(obs)
+    except json.JSONDecodeError:
+        return 0, {}
 
     lidar_data = obs.get('ROS2Range', [])
     lidar_no_element_detect = int(bool(lidar_data))
@@ -124,6 +124,7 @@ def transfer_obs(obs):
     lidar_data, lidar_data_direction = get_smallest_lidar_values_with_direction(lidar_data, lidar_data_direction)
     lidar_data = round_to_decimal_places(lidar_data)
 
+    #  將選出來的lidar vector轉換成1維list
     converted_min_directions = [parse_direction_string(direction) for direction in lidar_data_direction]
     flattened_directions = [num for sublist in converted_min_directions for num in sublist]
     flattened_directions = round_to_decimal_places(flattened_directions)
@@ -134,19 +135,15 @@ def transfer_obs(obs):
     ]
     wheel_angular_vel = round_to_decimal_places(wheel_angular_vel)
 
-    car_quaternion = round_to_decimal_places(obs['ROS2CarQuaternion'][2:4])
+    car_quaternion = round_to_decimal_places(obs['ROS2CarQuaternion'][2:4]) #只取z w
 
-    car_orientation = [quaternion_to_car_orientation(0,0,car_quaternion[0], car_quaternion[1])]
-    car_orientation = round_to_decimal_places(car_orientation)
+    car_steering_angle = [quaternion_to_car_orientation(0,0,car_quaternion[0], car_quaternion[1])]
+    car_steering_angle = round_to_decimal_places(car_steering_angle)
 
     car_pos, target_pos = obs['ROS2CarPosition'], obs['ROS2TargetPosition']
-    car_target_distance = math.sqrt((car_pos[0] - target_pos[0])**2 + (car_pos[1] - target_pos[1])**2)
-    car_target_distance = round_to_decimal_places([car_target_distance])[0]
+    car_target_distance = (car_pos[0] - target_pos[0])**2 + (car_pos[1] - target_pos[1])**2
+    car_target_distance = round_to_decimal_places([math.sqrt(car_target_distance)])[0]
     
-    #這因該用不到了
-    # target_flag = 0
-    # if car_target_distance <=1:
-    #     target_flag = 1
     
     if len(wheel_angular_vel) != 2:
         print("error")
@@ -155,11 +152,10 @@ def transfer_obs(obs):
         "car_pos": trans_to_float(car_pos),
         "target_pos": trans_to_float(target_pos),
         "car_target_distance": float(car_target_distance),
-        "car_orientation": trans_to_float(car_orientation),
+        "car_steering_angle": trans_to_float(car_steering_angle),
+        "car_quaternion": trans_to_float(car_quaternion),
         "lidar_data": trans_to_float(lidar_data),
         "flattened_directions": trans_to_float(flattened_directions),
         "wheel_angular_vel": trans_to_float(wheel_angular_vel),
     }
-
-
     return lidar_no_element_detect, state_dict
