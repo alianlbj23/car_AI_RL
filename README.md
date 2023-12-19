@@ -3,7 +3,7 @@
 # 功能
 
 用於將Unity的資料透過Rosbridge傳輸到RL訓練環境進行訓練
-
+目前都還在thread_testing測試
 # 各個程式介紹
 
 * AI_node.py
