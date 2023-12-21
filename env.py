@@ -4,6 +4,8 @@ import gymnasium as gym
 from gymnasium import spaces
 from tools import *
 from collections import deque
+from curious_model import *
+import torch
 
 
 class CustomCarEnv(gym.Env):
@@ -13,24 +15,21 @@ class CustomCarEnv(gym.Env):
         self.action_space = spaces.Discrete(4)
         self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(9,), dtype=np.float32)
 
+        #  好奇心模組
+        state_dim = self.observation_space.shape[0]
+        action_dim = self.action_space.n
+        self.prediction_model = PredictionModel(state_dim, action_dim)
+        self.prediction_model_optimizer = torch.optim.Adam(self.prediction_model.parameters(), lr=0.001)
+
         # 初始化状态
         self.state = None
 
         # ROS 和 Unity 接口的节点
         self.AI_node = AI_node
 
-        self.reset_done_flag = 0
-
-        self.last_car_target_distance = 0
-        self.last_car_position = np.inf
-        self.previous_steering_angle = np.inf
-        self.current_action = None
-        self.previous_direction = None
-
-        self.action_history = deque(maxlen=10) 
-
-        
-
+        self.previous_state = None
+        self.previous_action = None
+        self.training_data = []
 
     def _process_data(self, unity_data):  #  將data轉成numpy
         while unity_data is None:
@@ -46,36 +45,18 @@ class CustomCarEnv(gym.Env):
                 flat_list.append(value)
         return np.array(flat_list, dtype=np.float32)
 
-    def reward_calculate(self, state_dict):
-        print("helllko")
+    def reward_calculate(self, current_state, action, next_state):
         reward = 0
-        car_pos = state_dict['car_pos']
-        car_quaternion = state_dict['car_quaternion']
-        target_pos = state_dict['target_pos']
-        current_distance = state_dict['car_target_distance']
-        lidar_data = state_dict['lidar_data']
-        
-        #  與目標距離
-        reward += calculate_distance_change(current_distance, 1.5)
-        
-        #紀錄上一次的距離
-        # self.last_car_target_distance = current_distance
-
-        #  lidar
-        reward += calculate_lidar_based_reward(lidar_data, 0.5)*100
-
-        #  利用偏行角算分 待觀察
-        # reward += calculate_angle_point(car_quaternion[0], car_quaternion[1], car_pos, target_pos)
-
-        #  平穩駕駛獎勵
-        # reward += calculate_drive_reward(current_steering_angle, self.previous_steering_angle)
-        # self.previous_steering_angle = current_steering_angle
-        
-        #  防止左右一直擺頭
-        # reward += calculate_drive_reward(self.current_action, self.previous_direction)
-        # self.previous_direction = self.current_action
-
-        print(reward)
+        if self.previous_state is not None and self.previous_action is not None:
+            # 将动作转换为模型可接受的形式（如果需要）
+            action_tensor = torch.tensor([self.previous_action], dtype=torch.float32)
+            current_state_tensor = torch.tensor(self.previous_state, dtype=torch.float32)
+            next_state_tensor = torch.tensor(next_state, dtype=torch.float32)
+            curiosity_reward = calculate_curiosity_reward(self.prediction_model,
+                                                          current_state_tensor,
+                                                          action_tensor,
+                                                          next_state_tensor)
+            reward += curiosity_reward
         return reward
 
     def step(self, action):
@@ -90,18 +71,24 @@ class CustomCarEnv(gym.Env):
         if action == 2 or action == 3:
             self.current_action = action
 
-        self.action_history.append(action)
 
-        unity_data = self._wait_for_data()
-        unity_data_for_reward = unity_data.copy()
-        unity_data = data_dict_pop(unity_data)
-        # unity_data.pop('car_quaternion', None)
-        self.state = self._process_data(unity_data)
-        
-        reward = self.reward_calculate(unity_data_for_reward)
+        current_state = self._wait_for_data()
+        current_state = data_dict_pop(current_state)
+        self.state = self._process_data(current_state)
+
+        if self.previous_state is not None and self.previous_action is not None:
+            self.training_data.append((self.previous_state, self.previous_action, self.state))
+        self.previous_state = self.state
+        self.previous_action = action
+        BATCH_SIZE = 32
+        if len(self.training_data) >= BATCH_SIZE:
+            train_model(self.prediction_model, self.training_data, self.prediction_model_optimizer)
+            self.training_data.clear()
+            
+        reward = self.reward_calculate(current_state, action, self.state)
 
         # print("self.step_count : ", self.step_count)
-        terminated = unity_data['car_target_distance'] < 1 or min(unity_data['lidar_data']) < 0.2 #or self.step_count == 100
+        terminated = current_state['car_target_distance'] < 1 or min(current_state['lidar_data']) < 0.2 #or self.step_count == 100
         return self.state, reward, terminated, False, {}
     
     def _wait_for_data(self): #  等待最新的data
@@ -120,21 +107,12 @@ class CustomCarEnv(gym.Env):
             unity_data_reset_state = self.AI_node.get_latest_data()
 
         unity_data_reset_state = data_dict_pop(unity_data_reset_state)
-        # unity_data_reset_state.pop('car_quaternion', None)
-        # unity_data_reset_state.pop('car_pos', None)
-        # unity_data_reset_state.pop('target_pos', None)
             
         self.state = self._process_data(unity_data_reset_state)
-        print("dimension : ", len(self.state))
-        self.last_car_target_distance = 0
-        self.last_car_position = np.inf
-        self.previous_steering_angle = np.inf
 
-        self.current_action = 0
-        self.previous_direction = 0
-        self.action_history = deque(maxlen=10) 
+        self.previous_state = None
+        self.previous_action = None
 
-        # self.AI_node.not_work()
         print("Reset Game")
         print(unity_data_reset_state)
         self.AI_node.reset()
