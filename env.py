@@ -47,7 +47,7 @@ class CustomCarEnv(gym.Env):
         return np.array(flat_list, dtype=np.float32)
 
     def reward_calculate(self, state_dict):
-
+        print("helllko")
         reward = 0
         car_pos = state_dict['car_pos']
         car_quaternion = state_dict['car_quaternion']
