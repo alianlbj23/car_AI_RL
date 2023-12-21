@@ -27,7 +27,6 @@ def main():
     node = AiNode()
     pros = threading.Thread(target=spin_ros_node, args=(node,))
     pros.start()  
-
     # model = DDPG.load("./Model/ddpg_custom_car_model")
 
     env = gym.make("CustomCarEnv-v0", AI_node=node)
@@ -37,7 +36,7 @@ def main():
 
     model = DDPG("MlpPolicy", env, action_noise=action_noise ,verbose=1)
     total_timesteps = 10000
-    progress_callback = ProgressBarCallback(total_timesteps)
+    # progress_callback = ProgressBarCallback(total_timesteps)
     
     model.learn(total_timesteps=total_timesteps)
     model.save("./Model/ddpg_custom_car_model")  # 保存模型

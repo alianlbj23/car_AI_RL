@@ -11,6 +11,8 @@ from std_msgs.msg import String
 from std_msgs.msg import Float32MultiArray
 import csv
 from datetime import datetime
+from tools import *
+import time
 
 class AiNode(Node):
     def __init__(self):
@@ -39,6 +41,9 @@ class AiNode(Node):
         self.state_detect = 0
         self.tokens = list()
 
+        self.last_car_target_distance = 0
+        self.steel_action = 0
+
     def _process_data(self, unity_data):
         # while unity_data is None:
         #     time.sleep(0.1)
@@ -53,44 +58,39 @@ class AiNode(Node):
                 flat_list.append(value)
         return np.array(flat_list, dtype=float)
     
-    def get_yaw_from_quaternion(self, z, w):
-        """从四元数的 z 和 w 分量中提取偏航角（Y 轴旋转）"""
-        return np.degrees(2 * np.arctan2(z, w))
-    
-    def get_direction_vector(self, current_position, target_position):
-        """计算从当前位置指向目标位置的向量"""
-        return np.array(target_position) - np.array(current_position)
-    
-    def get_angle_to_target(self, car_yaw, direction_vector):
-        # 计算车辆朝向与目标方向之间的角度差
-        target_yaw = np.arctan2(direction_vector[1], direction_vector[0])
-        angle_diff = target_yaw - np.radians(car_yaw)
-        return np.abs(np.degrees(angle_diff)) % 360
     
     def collect_unity_data(self, unityState):
         self.state_detect, token = transfer_obs(unityState)
         if self.state_detect == 1: 
-            
+            reward = 0
             car_pos = token['car_pos']
             target_pos = token['target_pos']
             car_quaternion = token['car_quaternion']
-            car_yaw = self.get_yaw_from_quaternion(car_quaternion[0], car_quaternion[1])
-            direction_vector = self.get_direction_vector(car_pos, target_pos)
-            angle_to_target = self.get_angle_to_target(car_yaw, direction_vector)
-            print(angle_to_target)
-            del token['car_quaternion']
-            # self._process_data(token)
+            current_distance = token['car_target_distance']
+            lidar_data = token['lidar_data']
 
-            # new_frame = eval(token)
-            # print("frame length : ", len(new_frame))
-            # action = []
-            # action.append(float(new_frame[-1]))
-            # data = Float32MultiArray()
-            # data.data = action
-            # if(new_frame[-1] == 1):
-            #     self.publisher_AINode_2_unity_RESET_thu_ROSbridge.publish(data)
+            reward += calculate_distance_change(current_distance, 2.5)
+        
+            #紀錄上一次的距離
+
+            #  lidar
+            reward += calculate_lidar_based_reward(lidar_data, 0.5)*100
+
+            #  利用偏行角算分
+
+            # reward += calculate_angle_point(car_quaternion[0], car_quaternion[1], car_pos, target_pos)
+
+            print(reward)
+            
+            
+
+            
+            if(current_distance < 1):
+                msg = Float32MultiArray()
+                msg.data = [1.0] # 送個訊號過去觸發unity的重製，裡面數字沒有意義
+                self.publisher_AINode_2_unity_RESET_thu_ROSbridge.publish(msg)
+                print("reset")
             # else:
-            #     self.publisher_AINode_2_unity_thu_ROSbridge.publish(data)
         else:
             print("Unity lidar no signal.....")
             

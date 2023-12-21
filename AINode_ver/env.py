@@ -125,7 +125,6 @@ class CustomCarEnv(gym.Env):
     def _wait_for_data(self): #  等待最新的data
         unity_data = self.AI_node.get_latest_data()
         while unity_data is None:
-            time.sleep(0.1)  
             unity_data = self.AI_node.get_latest_data()
         return unity_data
 
@@ -144,7 +143,7 @@ class CustomCarEnv(gym.Env):
         self.step_count = 0
         self.action_history = deque(maxlen=10) 
 
-        self.AI_node.not_work()
+        # self.AI_node.not_work()
         print("Reset Game")
         return self.state, {}
 

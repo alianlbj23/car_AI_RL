@@ -35,7 +35,7 @@ def get_smallest_lidar_values_with_direction(lidar_data, lidar_directions):
     Divide the lidar data into 15 chunks and return the smallest value from each chunk
     along with its direction.
     """
-    chunk_size = len(lidar_data) // 15
+    chunk_size = len(lidar_data) // 8
     result = []
     min_value_list = []
     min_direction_list = []
@@ -123,7 +123,6 @@ def transfer_obs(obs):
     lidar_data_direction = obs['ROS2RangePosition']
     lidar_data, lidar_data_direction = get_smallest_lidar_values_with_direction(lidar_data, lidar_data_direction)
     lidar_data = round_to_decimal_places(lidar_data)
-
     #  將選出來的lidar vector轉換成1維list
     converted_min_directions = [parse_direction_string(direction) for direction in lidar_data_direction]
     flattened_directions = [num for sublist in converted_min_directions for num in sublist]
@@ -136,7 +135,6 @@ def transfer_obs(obs):
     wheel_angular_vel = round_to_decimal_places(wheel_angular_vel)
 
     car_quaternion = round_to_decimal_places(obs['ROS2CarQuaternion'][2:4]) #只取z w
-
     car_steering_angle = [quaternion_to_car_orientation(0,0,car_quaternion[0], car_quaternion[1])]
     car_steering_angle = round_to_decimal_places(car_steering_angle)
 
@@ -152,10 +150,10 @@ def transfer_obs(obs):
         "car_pos": trans_to_float(car_pos),
         "target_pos": trans_to_float(target_pos),
         "car_target_distance": float(car_target_distance),
-        "car_steering_angle": trans_to_float(car_steering_angle),
+        # "car_steering_angle": trans_to_float(car_steering_angle),
         "car_quaternion": trans_to_float(car_quaternion),
         "lidar_data": trans_to_float(lidar_data),
-        "flattened_directions": trans_to_float(flattened_directions),
-        "wheel_angular_vel": trans_to_float(wheel_angular_vel),
+        # "flattened_directions": trans_to_float(flattened_directions),
+        # "wheel_angular_vel": trans_to_float(wheel_angular_vel),
     }
     return lidar_no_element_detect, state_dict
