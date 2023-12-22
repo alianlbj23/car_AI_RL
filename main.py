@@ -11,6 +11,9 @@ from env import CustomCarEnv
 
 from stable_baselines3.common.callbacks import BaseCallback
 import time
+import datetime
+
+
 
 
 class CustomCallback(BaseCallback):
@@ -27,7 +30,9 @@ class CustomCallback(BaseCallback):
 
         # 定期保存模型
         if self.n_calls - self.last_save_step >= self.save_freq:
-            self.model.save(f"{self.save_path}_{self.n_calls}")
+            now = datetime.datetime.now()
+            self.time_name = datetime.datetime.timestamp(now)
+            self.model.save(f"{self.save_path}_{self.n_calls}_{self.time_name}")
             self.last_save_step = self.n_calls
 
         return True
@@ -53,13 +58,13 @@ def main():
 
     # n_actions = env.action_space.shape[-1]
     try:
-        model = PPO.load("./Model/ppo_custom_car_model_100000") #  load model
+        model = PPO.load("./Model/ppo_custom_car_model_1000_1703202507") #  load model
         model.set_env(env)
     except:
         print("hello")
         model = PPO("MlpPolicy", env ,verbose=1,learning_rate=0.001)
-    total_timesteps = 100000
-    custom_callback = CustomCallback("./Model/ppo_custom_car_model", save_freq=10000)
+    total_timesteps = 1000000
+    custom_callback = CustomCallback("./Model/ppo_custom_car_model", save_freq=1000)
     model.learn(total_timesteps=total_timesteps, callback=custom_callback)
     rclpy.shutdown()
     pros.join()

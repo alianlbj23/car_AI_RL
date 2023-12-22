@@ -62,11 +62,12 @@ class CustomCarEnv(gym.Env):
         # self.last_car_target_distance = current_distance
 
         #  lidar
-        reward += calculate_lidar_based_reward(lidar_data, 0.5)*100
+        reward += calculate_lidar_based_reward(lidar_data, 0.45)*100
 
         #  利用偏行角算分 待觀察
-        # reward += calculate_angle_point(car_quaternion[0], car_quaternion[1], car_pos, target_pos)
-
+        reward += calculate_angle_point(car_quaternion[0], car_quaternion[1], car_pos, target_pos)*20
+        print(state_dict)
+        print(reward)
         #  平穩駕駛獎勵
         # reward += calculate_drive_reward(current_steering_angle, self.previous_steering_angle)
         # self.previous_steering_angle = current_steering_angle
@@ -74,8 +75,6 @@ class CustomCarEnv(gym.Env):
         #  防止左右一直擺頭
         # reward += calculate_drive_reward(self.current_action, self.previous_direction)
         # self.previous_direction = self.current_action
-
-        print(reward)
         return reward
 
     def step(self, action):
@@ -125,7 +124,6 @@ class CustomCarEnv(gym.Env):
         # unity_data_reset_state.pop('target_pos', None)
             
         self.state = self._process_data(unity_data_reset_state)
-        print("dimension : ", len(self.state))
         self.last_car_target_distance = 0
         self.last_car_position = np.inf
         self.previous_steering_angle = np.inf
@@ -136,7 +134,6 @@ class CustomCarEnv(gym.Env):
 
         # self.AI_node.not_work()
         print("Reset Game")
-        print(unity_data_reset_state)
         self.AI_node.reset()
         time.sleep(1)
         return self.state, {}
