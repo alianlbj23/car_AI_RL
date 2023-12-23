@@ -58,23 +58,15 @@ class CustomCarEnv(gym.Env):
         #  與目標距離
         reward += calculate_distance_change(current_distance, 1.5)
         
-        #紀錄上一次的距離
-        # self.last_car_target_distance = current_distance
-
-        #  lidar
-        reward += calculate_lidar_based_reward(lidar_data, 0.45)*100
-
-        #  利用偏行角算分 待觀察
-        reward += calculate_angle_point(car_quaternion[0], car_quaternion[1], car_pos, target_pos)*20
-        print(state_dict)
-        print(reward)
-        #  平穩駕駛獎勵
-        # reward += calculate_drive_reward(current_steering_angle, self.previous_steering_angle)
-        # self.previous_steering_angle = current_steering_angle
         
-        #  防止左右一直擺頭
-        # reward += calculate_drive_reward(self.current_action, self.previous_direction)
-        # self.previous_direction = self.current_action
+        if self.previous_direction != None:
+            if self.previous_direction == 0:
+                reward += 100
+            elif self.previous_direction == 3:
+                reward -= 500
+            else:
+                reward -= 100
+            
         return reward
 
     def step(self, action):
@@ -85,22 +77,17 @@ class CustomCarEnv(gym.Env):
         self.AI_node.reset()
         # action_flag = self.AI_node.start_work()
         self.AI_node.publish_to_unity(action)   
-
-        if action == 2 or action == 3:
-            self.current_action = action
-
-        self.action_history.append(action)
+        self.previous_direction = action
 
         unity_data = self._wait_for_data()
         unity_data_for_reward = unity_data.copy()
         unity_data = data_dict_pop(unity_data)
-        # unity_data.pop('car_quaternion', None)
         self.state = self._process_data(unity_data)
         
         reward = self.reward_calculate(unity_data_for_reward)
 
         # print("self.step_count : ", self.step_count)
-        terminated = unity_data['car_target_distance'] < 1 or min(unity_data['lidar_data']) < 0.2 #or self.step_count == 100
+        terminated = unity_data['car_target_distance'] < 1 #or self.step_count == 100
         return self.state, reward, terminated, False, {}
     
     def _wait_for_data(self): #  等待最新的data
@@ -129,8 +116,7 @@ class CustomCarEnv(gym.Env):
         self.previous_steering_angle = np.inf
 
         self.current_action = 0
-        self.previous_direction = 0
-        self.action_history = deque(maxlen=10) 
+        self.previous_direction = None
 
         # self.AI_node.not_work()
         print("Reset Game")

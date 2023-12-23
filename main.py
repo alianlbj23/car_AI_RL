@@ -58,7 +58,7 @@ def main():
 
     # n_actions = env.action_space.shape[-1]
     try:
-        model = PPO.load("./Model/ppo_custom_car_model_1000_1703202507") #  load model
+        model = PPO.load("./Model/ppo_custom_car_model_389000_1703296576") #  load model
         model.set_env(env)
     except:
         print("hello")
