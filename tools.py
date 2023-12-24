@@ -49,13 +49,18 @@ def calculate_distance_change(current_distance, threshold):
     return point
 
 
-def calculate_lidar_based_reward(lidar_data, safe_distance):
+def calculate_lidar_based_reward(lidar_data, safe_distance, current_action):
     # 获取 LiDAR 数据中最近障碍物的距离
+    if current_action == None:
+        return 0
     min_distance = min(lidar_data)
 
     # 如果距离小于安全距离，则进行指数型惩罚
     if min_distance < safe_distance:
         # 计算距离差
+        if lidar_data[0] < safe_distance or lidar_data[1] < safe_distance:
+            if current_action == 1 or current_action == 2:
+                return 50
         distance_diff = safe_distance - min_distance
         # 应用指数型惩罚
         point = -np.exp(distance_diff * 10)*50  # 惩罚系数可以根据需要调整

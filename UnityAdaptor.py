@@ -150,10 +150,9 @@ def transfer_obs(obs):
         "car_pos": trans_to_float(car_pos),
         "target_pos": trans_to_float(target_pos),
         "car_target_distance": float(car_target_distance),
-        # "car_steering_angle": trans_to_float(car_steering_angle),
         "car_quaternion": trans_to_float(car_quaternion),
         "lidar_data": trans_to_float(lidar_data),
-        # "flattened_directions": trans_to_float(flattened_directions),
-        # "wheel_angular_vel": trans_to_float(wheel_angular_vel),
+        "relative_coordinates": trans_to_float([target_pos[0]-car_pos[0],target_pos[1]-car_pos[0]])
+        # "flattened_directions": trans_to_float(flattened_directions), #  lidar direction
     }
     return lidar_no_element_detect, state_dict

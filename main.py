@@ -58,10 +58,9 @@ def main():
 
     # n_actions = env.action_space.shape[-1]
     try:
-        model = PPO.load("./Model/ppo_custom_car_model_1000_1703202507") #  load model
+        # model = PPO.load("./Model/ppo_custom_car_model_13000_1703416092.506598") #  load model
         model.set_env(env)
     except:
-        print("hello")
         model = PPO("MlpPolicy", env ,verbose=1,learning_rate=0.001)
     total_timesteps = 1000000
     custom_callback = CustomCallback("./Model/ppo_custom_car_model", save_freq=1000)
