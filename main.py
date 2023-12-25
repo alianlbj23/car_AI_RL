@@ -58,7 +58,7 @@ def main():
 
     # n_actions = env.action_space.shape[-1]
     try:
-        # model = PPO.load("./Model/ppo_custom_car_model_13000_1703416092.506598") #  load model
+        model = PPO.load("./Model/ppo_custom_car_model_278000_1703457082.884543") #  load model
         model.set_env(env)
     except:
         model = PPO("MlpPolicy", env ,verbose=1,learning_rate=0.001)
