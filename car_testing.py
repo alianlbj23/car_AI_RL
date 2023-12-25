@@ -67,20 +67,7 @@ class AiNode(Node):
             target_pos = token['target_pos']
             car_quaternion = token['car_quaternion']
             current_distance = token['car_target_distance']
-            lidar_data = token['lidar_data']
-
-            reward += calculate_distance_change(current_distance, 2.5)
-        
-            #紀錄上一次的距離
-
-            #  lidar
-            reward += calculate_lidar_based_reward(lidar_data, 0.5)*100
-
-            #  利用偏行角算分
-
-            # reward += calculate_angle_point(car_quaternion[0], car_quaternion[1], car_pos, target_pos)
-
-            print(reward)
+            calculate_angle_point(car_quaternion[0], car_quaternion[1], car_pos, target_pos)
             
             
 

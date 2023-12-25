@@ -3,8 +3,7 @@ import time
 import gymnasium as gym
 from gymnasium import spaces
 from tools import *
-from collections import deque
-
+from avoidance import refined_obstacle_avoidance_with_target_orientation
 
 class CustomCarEnv(gym.Env):
     ENV_NAME = "CustomCarEnv-v0"
@@ -20,23 +19,15 @@ class CustomCarEnv(gym.Env):
         self.AI_node = AI_node
 
         self.reset_done_flag = 0
-
-        self.last_car_target_distance = 0
-        self.last_car_position = np.inf
-        self.previous_steering_angle = np.inf
-        self.previous_action = None
-        self.previous_direction = None
-
-        self.action_history = deque(maxlen=10) 
+        
+        self.obs_for_avoidance = None
 
         self.start_time = time.time() 
 
     def _process_data(self, unity_data):  #  將data轉成numpy
         while unity_data is None:
-            # time.sleep(0.1)
             unity_data = self.AI_node.get_latest_data()
 
-        # 现在处理数据
         flat_list = []
         for value in unity_data.values():
             if isinstance(value, list):
@@ -53,53 +44,53 @@ class CustomCarEnv(gym.Env):
         target_pos = state_dict['target_pos']
         current_distance = state_dict['car_target_distance']
         lidar_data = state_dict['lidar_data']
+
         
         #  與目標距離
         reward += calculate_distance_change(current_distance, 1.5)
-        
-        #紀錄上一次的距離
-        # self.last_car_target_distance = current_distance
 
         #  lidar
-        reward += calculate_lidar_based_reward(lidar_data, 0.45, self.current_action)*100
+        reward += calculate_lidar_based_reward(lidar_data, 0.45)*100
 
         #  利用偏行角算分 待觀察
-        reward += calculate_angle_point(car_quaternion[0], car_quaternion[1], car_pos, target_pos)
-
-        #  平穩駕駛獎勵
-        # reward += calculate_drive_reward(current_steering_angle, self.previous_steering_angle)
-        # self.previous_steering_angle = current_steering_angle
+        reward += calculate_angle_point(car_quaternion[0], car_quaternion[1], car_pos, target_pos)*10
         
-        #  防止左右一直擺頭
-        # reward += calculate_drive_reward(self.current_action, self.previous_direction)
-        # self.previous_direction = self.current_action
-        # print(reward)
         return reward
 
     def step(self, action):
         # 0:前進 1:左轉 2:右轉 3:後退
         #  不設定sleep，ros會因為訊息過大而崩潰
+
         elapsed_time = time.time() - self.start_time
         
-        # action_flag = self.AI_node.start_work()
-        self.AI_node.publish_to_unity(action) 
-        self.AI_node.reset()  
+        if self.obs_for_avoidance != None:
+            action = refined_obstacle_avoidance_with_target_orientation(
+                self.obs_for_avoidance['lidar_data'],
+                self.obs_for_avoidance['car_quaternion'][0],
+                self.obs_for_avoidance['car_quaternion'][1],
+                self.obs_for_avoidance['car_pos'],
+                self.obs_for_avoidance['target_pos']
+            )
+            print(action)
+        else:
+            pass
 
-        if action == 2 or action == 3:
-            self.current_action = action
-        if elapsed_time > 180:
-            print("time up")
+        self.AI_node.publish_to_unity(action) #  送出後會等到unity做完動作後
+        self.AI_node.reset()  
 
         unity_data = self._wait_for_data()
 
-        unity_data_for_reward = unity_data.copy()
-        unity_data = data_dict_pop(unity_data)
-        # unity_data.pop('car_quaternion', None)
-        self.state = self._process_data(unity_data)
-        
+        unity_data_for_reward = unity_data.copy() #  複製一個給reward計算用
+        unity_data = data_dict_pop(unity_data) #  將不該給observation的拿掉
+        self.state = self._process_data(unity_data)  #  轉成np array
+
+        self.obs_for_avoidance = unity_data_for_reward
+
         reward = self.reward_calculate(unity_data_for_reward)
 
-        # print("self.step_count : ", self.step_count)
+        if elapsed_time > 180: #  3分鐘限制
+            print("time up")
+
         terminated = unity_data['car_target_distance'] < 1 or min(unity_data['lidar_data']) < 0.2 or elapsed_time > 180
         return self.state, reward, terminated, False, {}
     
@@ -119,19 +110,9 @@ class CustomCarEnv(gym.Env):
         while unity_data_reset_state == None: # waiting for unity state
             unity_data_reset_state = self.AI_node.get_latest_data()
         unity_data_reset_state = data_dict_pop(unity_data_reset_state)
-        # unity_data_reset_state.pop('car_quaternion', None)
-        # unity_data_reset_state.pop('car_pos', None)
-        # unity_data_reset_state.pop('target_pos', None)
             
-        self.state = self._process_data(unity_data_reset_state)
-        self.last_car_target_distance = 0
-        self.last_car_position = np.inf
-        self.previous_steering_angle = np.inf
-        
+        self.state = self._process_data(unity_data_reset_state)        
 
-        self.current_action = 0
-        self.previous_direction = 0
-        self.action_history = deque(maxlen=10) 
         self.start_time = time.time()
 
         # self.AI_node.not_work()

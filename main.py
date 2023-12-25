@@ -13,9 +13,6 @@ from stable_baselines3.common.callbacks import BaseCallback
 import time
 import datetime
 
-
-
-
 class CustomCallback(BaseCallback):
     def __init__(self, save_path, save_freq, verbose=0):
         super(CustomCallback, self).__init__(verbose)
@@ -37,7 +34,6 @@ class CustomCallback(BaseCallback):
 
         return True
 
-    
 def spin_ros_node(node):
     rclpy.spin(node)
     node.destroy_node()
@@ -56,7 +52,6 @@ def main():
 
     env = gym.make("CustomCarEnv-v0", AI_node=node)
 
-    # n_actions = env.action_space.shape[-1]
     try:
         model = PPO.load("./Model/ppo_custom_car_model_278000_1703457082.884543") #  load model
         model.set_env(env)
@@ -67,8 +62,6 @@ def main():
     model.learn(total_timesteps=total_timesteps, callback=custom_callback)
     rclpy.shutdown()
     pros.join()
-    
-
 
 if __name__ == '__main__':
     main()

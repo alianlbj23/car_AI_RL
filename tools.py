@@ -22,8 +22,9 @@ def calculate_angle_point(car_quaternion_1, car_quaternion_2, car_pos, target_po
     direction_vector = get_direction_vector(car_pos, target_pos)
     angle_to_target = get_angle_to_target(car_yaw, direction_vector)
     point = 0
-
+    
     angle_diff = np.abs(angle_to_target - 180)
+    print("angle_diff : ", angle_diff)
     if 0 <= angle_diff <= 20:
         point = 15 * (1 - (angle_diff / 30))
     # else:
@@ -48,11 +49,9 @@ def calculate_distance_change(current_distance, threshold):
         point = 10000
     return point
 
-
-def calculate_lidar_based_reward(lidar_data, safe_distance, current_action):
+#  lidar偵測障礙物
+def calculate_lidar_based_reward(lidar_data, safe_distance):
     # 获取 LiDAR 数据中最近障碍物的距离
-    if current_action == None:
-        return 0
     min_distance = min(lidar_data)
 
     # 如果距离小于安全距离，则进行指数型惩罚
