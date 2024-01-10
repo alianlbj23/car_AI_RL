@@ -15,7 +15,7 @@ def get_angle_to_target(car_yaw, direction_vector):
     target_yaw = np.arctan2(direction_vector[1], direction_vector[0])
     angle_diff = target_yaw - np.radians(car_yaw)
 
-    return np.abs(np.degrees(angle_diff)) % 360
+    return (np.degrees(angle_diff)) % 360
 
 def calculate_angle_point(car_quaternion_1, car_quaternion_2, car_pos, target_pos):
     car_yaw = get_yaw_from_quaternion(car_quaternion_1, car_quaternion_2)
@@ -23,8 +23,8 @@ def calculate_angle_point(car_quaternion_1, car_quaternion_2, car_pos, target_po
     angle_to_target = get_angle_to_target(car_yaw, direction_vector)
     point = 0
     
-    angle_diff = np.abs(angle_to_target - 180)
-    print("angle_diff : ", angle_diff)
+    angle_diff = (angle_to_target - 180)
+# print(angle_diff)
     if 0 <= angle_diff <= 20:
         point = 15 * (1 - (angle_diff / 30))
     # else:

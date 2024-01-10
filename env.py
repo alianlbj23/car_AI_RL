@@ -17,12 +17,11 @@ class CustomCarEnv(gym.Env):
 
         # ROS 和 Unity 接口的节点
         self.AI_node = AI_node
-
-        self.reset_done_flag = 0
         
         self.obs_for_avoidance = None
-
         self.start_time = time.time() 
+        self.mode = "rule"
+
 
     def _process_data(self, unity_data):  #  將data轉成numpy
         while unity_data is None:
@@ -63,28 +62,24 @@ class CustomCarEnv(gym.Env):
 
         elapsed_time = time.time() - self.start_time
         
-        if self.obs_for_avoidance != None:
-            action = refined_obstacle_avoidance_with_target_orientation(
-                self.obs_for_avoidance['lidar_data'],
-                self.obs_for_avoidance['car_quaternion'][0],
-                self.obs_for_avoidance['car_quaternion'][1],
-                self.obs_for_avoidance['car_pos'],
-                self.obs_for_avoidance['target_pos']
-            )
-            print(action)
-        else:
-            pass
-
+        #  設定為rule模式，如果要用reward跑action的話self.mode射程其他的字眼
+        if self.mode == "rule":
+            if self.obs_for_avoidance != None:
+                action = rule_action(self.obs_for_avoidance)
+            else:
+                pass
+        
         self.AI_node.publish_to_unity(action) #  送出後會等到unity做完動作後
         self.AI_node.reset()  
 
         unity_data = self._wait_for_data()
 
         unity_data_for_reward = unity_data.copy() #  複製一個給reward計算用
+
         unity_data = data_dict_pop(unity_data) #  將不該給observation的拿掉
         self.state = self._process_data(unity_data)  #  轉成np array
 
-        self.obs_for_avoidance = unity_data_for_reward
+        self.obs_for_avoidance = unity_data_for_reward #  給rule用的
 
         reward = self.reward_calculate(unity_data_for_reward)
 
@@ -103,7 +98,7 @@ class CustomCarEnv(gym.Env):
 
     def reset(self,seed=None, options=None):
         
-        self.AI_node.publish_to_unity_RESET()
+        self.AI_node.publish_to_unity_RESET() #  送結束訊後給unity
         self.AI_node.reset()
         unity_data_reset_state = self._wait_for_data()
         
@@ -111,19 +106,32 @@ class CustomCarEnv(gym.Env):
             unity_data_reset_state = self.AI_node.get_latest_data()
         unity_data_reset_state = data_dict_pop(unity_data_reset_state)
             
-        self.state = self._process_data(unity_data_reset_state)        
+        self.state = self._process_data(unity_data_reset_state) 
 
         self.start_time = time.time()
+        self.obs_for_avoidance = None
 
-        # self.AI_node.not_work()
         print("Reset Game")
         self.AI_node.reset()
         time.sleep(1)
         return self.state, {}
     
-    
+#  將沒用到的feature拔掉
 def data_dict_pop(data_dict):
     data_dict.pop('car_quaternion', None)
     data_dict.pop('car_pos', None)
     data_dict.pop('target_pos', None)
     return data_dict
+
+def rule_action(obs_for_avoidance):
+    action = refined_obstacle_avoidance_with_target_orientation(
+        obs_for_avoidance['lidar_data'],
+        obs_for_avoidance['car_quaternion'][0],
+        obs_for_avoidance['car_quaternion'][1],
+        obs_for_avoidance['car_pos'],
+        obs_for_avoidance['target_pos']
+    )
+    return action
+
+def set_mode():
+    return "rule"    
