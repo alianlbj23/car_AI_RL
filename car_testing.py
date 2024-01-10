@@ -11,6 +11,8 @@ from std_msgs.msg import String
 from std_msgs.msg import Float32MultiArray
 import csv
 from datetime import datetime
+from tools import *
+import time
 
 class AiNode(Node):
     def __init__(self):
@@ -39,6 +41,9 @@ class AiNode(Node):
         self.state_detect = 0
         self.tokens = list()
 
+        self.last_car_target_distance = 0
+        self.steel_action = 0
+
     def _process_data(self, unity_data):
         # while unity_data is None:
         #     time.sleep(0.1)
@@ -53,21 +58,26 @@ class AiNode(Node):
                 flat_list.append(value)
         return np.array(flat_list, dtype=float)
     
+    
     def collect_unity_data(self, unityState):
         self.state_detect, token = transfer_obs(unityState)
-        if self.state_detect == 1:
-            print(token['car_target_distance'])
-            self._process_data(token)
-            # new_frame = eval(token)
-            # print("frame length : ", len(new_frame))
-            # action = []
-            # action.append(float(new_frame[-1]))
-            # data = Float32MultiArray()
-            # data.data = action
-            # if(new_frame[-1] == 1):
-            #     self.publisher_AINode_2_unity_RESET_thu_ROSbridge.publish(data)
+        if self.state_detect == 1: 
+            reward = 0
+            car_pos = token['car_pos']
+            target_pos = token['target_pos']
+            car_quaternion = token['car_quaternion']
+            current_distance = token['car_target_distance']
+            calculate_angle_point(car_quaternion[0], car_quaternion[1], car_pos, target_pos)
+            
+            
+
+            
+            if(current_distance < 1):
+                msg = Float32MultiArray()
+                msg.data = [1.0] # 送個訊號過去觸發unity的重製，裡面數字沒有意義
+                self.publisher_AINode_2_unity_RESET_thu_ROSbridge.publish(msg)
+                print("reset")
             # else:
-            #     self.publisher_AINode_2_unity_thu_ROSbridge.publish(data)
         else:
             print("Unity lidar no signal.....")
             
