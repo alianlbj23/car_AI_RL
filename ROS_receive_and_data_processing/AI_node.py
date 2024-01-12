@@ -1,12 +1,9 @@
-import numpy as np
-from datetime import datetime
-from UnityAdaptor import transfer_obs
+#  主要跟Unity收送資料的地方
+from ROS_receive_and_data_processing.UnityAdaptor import transfer_obs
 from rclpy.node import Node
 import rclpy
 from std_msgs.msg import String
 from std_msgs.msg import Float32MultiArray
-from collections import deque
-import threading
 
 
 class AiNode(Node):
