@@ -19,7 +19,7 @@ def lidar_processing(obs):
     lidar_data = obs.get('ROS2Range', [])
     lidar_no_element_detect = int(bool(lidar_data)) #  判斷有沒有收到lidar資料
     lidar_data_direction = obs['ROS2RangePosition'] #  因為都沒用到lidar的vector，若有需要可自行使用
-    lidar_data = get_smallest_lidar_values_with_direction(lidar_data, lidar_data_direction)
+    lidar_data = get_smallest_lidar_values(lidar_data)
     lidar_data = round_to_decimal_places(lidar_data)
     return lidar_data, lidar_no_element_detect
     

@@ -25,7 +25,7 @@ def wait_for_data(AI_node):
     
     while unity_data is None:
         unity_data = AI_node.get_latest_data()
-        
+    print(unity_data)
     unity_data_for_reward = unity_data.copy()
     unity_data = data_dict_pop(unity_data)
     return unity_data, unity_data_for_reward

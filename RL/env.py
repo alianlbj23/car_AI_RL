@@ -8,7 +8,6 @@ from RL.reward_cal import reward_calculate
 from RL.utils import process_data, wait_for_data
 
 class CustomCarEnv(gym.Env):
-    print("hello")
     ENV_NAME = "CustomCarEnv-v0"
     def __init__(self, AI_node):
         super(CustomCarEnv, self).__init__()
