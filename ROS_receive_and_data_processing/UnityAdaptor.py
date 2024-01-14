@@ -1,6 +1,5 @@
-import json
 import math
-from ROS_receive_and_data_processing.utils import *
+from utils.adaptor_utils import *
 from ROS_receive_and_data_processing.lidar_processing import lidar_processing
 
 def transfer_obs(obs):
@@ -18,7 +17,6 @@ def transfer_obs(obs):
     ])
 
     car_quaternion = round_to_decimal_places(obs['ROS2CarQuaternion'][2:4]) #只取z w
-
     car_pos, target_pos = obs['ROS2CarPosition'], obs['ROS2TargetPosition']
     car_target_distance = (car_pos[0] - target_pos[0])**2 + (car_pos[1] - target_pos[1])**2
     car_target_distance = round_to_decimal_places([math.sqrt(car_target_distance)])[0]
@@ -27,6 +25,10 @@ def transfer_obs(obs):
     if len(wheel_angular_vel) != 2:
         print("error")
 
+    '''
+    這邊定義state, reward計算也會基於以下這些state去計算, 要改RL收到的obs可以在
+    utils的obs_utils裡面data_dict_pop做修改
+    '''
     state_dict = {
         "car_pos": trans_to_float(car_pos),
         "target_pos": trans_to_float(target_pos),
@@ -35,4 +37,5 @@ def transfer_obs(obs):
         "lidar_data": trans_to_float(lidar_data),
         "relative_coordinates": trans_to_float([target_pos[0]-car_pos[0],target_pos[1]-car_pos[0]])
     }
+    
     return lidar_no_element_detect, state_dict

@@ -3,7 +3,6 @@ import numpy as np
 
 def data_dict_pop(data_dict):
     '''拿掉自己沒有要丟入obs的features'''
-    
     data_dict.pop('car_quaternion', None)
     data_dict.pop('car_pos', None)
     data_dict.pop('target_pos', None)
@@ -25,7 +24,6 @@ def wait_for_data(AI_node):
     
     while unity_data is None:
         unity_data = AI_node.get_latest_data()
-    print(unity_data)
     unity_data_for_reward = unity_data.copy()
     unity_data = data_dict_pop(unity_data)
     return unity_data, unity_data_for_reward

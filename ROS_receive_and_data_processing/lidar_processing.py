@@ -1,5 +1,5 @@
 #  處理lidar的資料
-from ROS_receive_and_data_processing.utils import *
+from utils.adaptor_utils import *
 
 def get_smallest_lidar_values(lidar_data):
     """
@@ -16,6 +16,7 @@ def get_smallest_lidar_values(lidar_data):
     return min_value_list   
 
 def lidar_processing(obs):
+    '''將lidar資料過濾後並取到小數第3位'''
     lidar_data = obs.get('ROS2Range', [])
     lidar_no_element_detect = int(bool(lidar_data)) #  判斷有沒有收到lidar資料
     lidar_data_direction = obs['ROS2RangePosition'] #  因為都沒用到lidar的vector，若有需要可自行使用

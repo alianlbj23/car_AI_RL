@@ -3,21 +3,23 @@ import time
 import gymnasium as gym
 from gymnasium import spaces
 
-from avoidance import refined_obstacle_avoidance_with_target_orientation
+# from avoidance import refined_obstacle_avoidance_with_target_orientation
 from RL.reward_cal import reward_calculate
-from RL.utils import process_data, wait_for_data
+from utils.obs_utils import process_data, wait_for_data
 
 class CustomCarEnv(gym.Env):
     ENV_NAME = "CustomCarEnv-v0"
     def __init__(self, AI_node):
         super(CustomCarEnv, self).__init__()
-        self.action_space = spaces.Discrete(4)
-        self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(11,), dtype=np.float32)
-
         # state初始化
         self.state = None
         self.AI_node = AI_node
         self.start_time = time.time() 
+        shape_number = self.get_initial_shape()
+        self.action_space = spaces.Discrete(4)
+        self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(shape_number,), dtype=np.float32)
+
+        
 
     def step(self, action):
         # 0:前進 1:左轉 2:右轉 3:後退
@@ -41,8 +43,6 @@ class CustomCarEnv(gym.Env):
             min(unity_data['lidar_data']) < 0.2 or 
             elapsed_time > 180
         )
-        
-        
         return self.state, reward, terminated, False, {}
 
     def reset(self,seed=None, options=None):
@@ -58,12 +58,8 @@ class CustomCarEnv(gym.Env):
         time.sleep(1)
         return self.state, {}
     
-def rule_action(obs_for_avoidance):
-    action = refined_obstacle_avoidance_with_target_orientation(
-        obs_for_avoidance['lidar_data'],
-        obs_for_avoidance['car_quaternion'][0],
-        obs_for_avoidance['car_quaternion'][1],
-        obs_for_avoidance['car_pos'],
-        obs_for_avoidance['target_pos']
-    )
-    return action
+    def get_initial_shape(self):
+        obs_state, _ = wait_for_data(self.AI_node)
+        obs_state = process_data(obs_state)
+        return len(obs_state)
+    

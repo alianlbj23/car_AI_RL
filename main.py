@@ -5,6 +5,9 @@ import threading
 from stable_baselines3 import PPO
 from RL.env import CustomCarEnv
 from RL.custom_callback import CustomCallback
+from avoidance_rule.rule_base import RuleBasedController
+from manual.manual_base import ManualBasedController
+import sys
 
 def init_ros_node():
     '''node初始化並開一個thread跑ros node'''
@@ -38,13 +41,23 @@ def gym_env_register(AI_node):
     return gym.make("CustomCarEnv-v0", AI_node=AI_node)
 
 def main():
+    mode = "train_rl"
+    if len(sys.argv) >= 2:
+        mode = sys.argv[1]
     node, ros_thread = init_ros_node()
-    env = gym_env_register(node)
-    train_model(env)
-    
-    #  中斷node
-    rclpy.shutdown()
-    ros_thread.join()
+    if mode.lower() == "train_rl":
+        env = gym_env_register(node)
+        train_model(env)
+    elif mode.lower() == "rule":
+        rule_controller = RuleBasedController(node)
+        rule_controller.run()
+    elif mode.lower() == "manual":
+        manual_controller = ManualBasedController(node)
+        manual_controller.run()
+    else:
+        print("Invalid mode. Please use 'RL' or 'rule'.")
+        rclpy.shutdown()
+        ros_thread.join()
 
 if __name__ == '__main__':
     main()
