@@ -3,7 +3,7 @@ from utils.adaptor_utils import *
 
 def get_smallest_lidar_values(lidar_data):
     """
-    Divide the lidar data into 8 chunks and return the smallest value from each chunk.
+    將lidar原本360個距離數值區分成n個區域, 每個區域只抓最小的數值
     """
     chunk_size = len(lidar_data) // 8
     min_value_list = []

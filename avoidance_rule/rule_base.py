@@ -1,6 +1,8 @@
 from avoidance_rule.avoidance import refined_obstacle_avoidance_with_target_orientation
 import rclpy
 from utils.obs_utils import *
+from csv_store_and_file.csv_store import save_data_to_csv, set_csv_format
+import time
 
 class RuleBasedController:
     def __init__(self, node):
@@ -22,13 +24,18 @@ class RuleBasedController:
             self.node.reset()
             _, unity_data = wait_for_data(self.node)
             action = self.rule_action(unity_data)
+            unity_data = set_csv_format(action, unity_data)
             self.data.append(unity_data)
+            
             self.node.publish_to_unity(action)
             terminated = (
                 unity_data['car_target_distance'] < 1 or 
                 min(unity_data['lidar_data']) < 0.2
             )
             if terminated:
+                save_data_to_csv(self.data)
+                time.sleep(1)
+                self.data = []
                 self.node.publish_to_unity_RESET()
     # def apply_rules(self):
     

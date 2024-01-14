@@ -2,10 +2,12 @@ import csv
 from datetime import datetime
 import os
 
-def set_csv_format(data):
-    
+def set_csv_format(action, data_dict):
+    data_dict["action"] = action
+    return data_dict
 
 def save_data_to_csv(data):
+    print(data)
     # 确保有数据要保存
     if not data:
         return
@@ -31,3 +33,4 @@ def save_data_to_csv(data):
         writer.writeheader()
         for i in data:
             writer.writerow(i)
+    print("store csv file")
