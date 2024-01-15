@@ -13,10 +13,10 @@ class RuleBasedController:
         self.last_turn_direction = 0
         self.controller = ObstacleAvoidanceController()  
         self.parameter_file = parameter_file
-        try:
-            self.controller.load_parameters(self.parameter_file)
-        except:
-            pass
+        # try:
+        #     self.controller.load_parameters(self.parameter_file)
+        # except:
+        #     pass
         
     def rule_action(self, obs_for_avoidance):
         action = self.controller.refined_obstacle_avoidance_with_target_orientation(
@@ -47,5 +47,5 @@ class RuleBasedController:
                 time.sleep(1)
                 self.data = []
                 self.node.publish_to_unity_RESET()
-                self.controller.save_parameters(self.parameter_file)
+                # self.controller.save_parameters(self.parameter_file)
     

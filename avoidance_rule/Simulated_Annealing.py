@@ -28,13 +28,13 @@ class ObstacleAvoidanceController:
             }, file)
             
     def refined_obstacle_avoidance_with_target_orientation(self, lidars, car_quaternion_1, car_quaternion_2, car_pos, target_pos):
-        print("temperature : ", self.temperature)
-        safe_distance = 0.35
+        # print("temperature : ", self.temperature)
+        safe_distance = 0.5
         angle_tolerance = 10  # degrees, tolerance for angle alignment
 
         angle_diff = calculate_angle_point(car_quaternion_1, car_quaternion_2, car_pos, target_pos)
         obstacle_near = any(lidar < safe_distance for lidar in lidars)
-
+        
         if obstacle_near:
             # 找安全方向
             #  8個lidar的版本
