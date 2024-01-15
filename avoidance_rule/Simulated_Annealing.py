@@ -36,21 +36,26 @@ class ObstacleAvoidanceController:
         obstacle_near = any(lidar < safe_distance for lidar in lidars)
 
         if obstacle_near:
-            # [现有代码不变]
-            # 确定安全的方向
-            front_clear = lidars[0] > safe_distance and lidars[7] > safe_distance
-            left_clear = all(lidar > safe_distance for lidar in lidars[1:4])
-            right_clear = all(lidar > safe_distance for lidar in lidars[4:7])
-
+            # 找安全方向
+            #  8個lidar的版本
+            # front_clear = lidars[0] > safe_distance and lidars[7] > safe_distance
+            # left_clear = all(lidar > safe_distance for lidar in lidars[1:4])
+            # right_clear = all(lidar > safe_distance for lidar in lidars[4:7])
+            
+            #  90E個lidar
+            front_clear = min(lidars[:16]) > safe_distance and min(lidars[-15:]) > safe_distance
+            left_clear = all(lidar > safe_distance for lidar in lidars[16:46])
+            right_clear = all(lidar > safe_distance for lidar in lidars[56:86])
+            
             clear_directions = []
             if front_clear:
-                clear_directions.append(0)  # 前进
+                clear_directions.append(0)  # 前進
             if left_clear:
-                clear_directions.append(1)  # 左转
+                clear_directions.append(1)  # 左
             if right_clear:
-                clear_directions.append(2)  # 右转
+                clear_directions.append(2)  # 右
 
-            # 使用温度影响转向决策
+            # 用溫度影響決策
             if len(clear_directions) > 1:
                 if random.random() < self.temperature:
                     self.temperature *= self.cooling_rate
@@ -75,4 +80,4 @@ class ObstacleAvoidanceController:
                 return self.last_turn_direction
             else:
                 self.temperature *= self.cooling_rate
-                return 0  # 直行
+                return 0  # forward

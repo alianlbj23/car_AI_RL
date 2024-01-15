@@ -49,7 +49,7 @@ def main():
         env = gym_env_register(node)
         train_model(env)
     elif mode.lower() == "rule":
-        rule_controller = RuleBasedController(node)
+        rule_controller = RuleBasedController(node, './Simulated_Annealing_model/parameters.pkl')
         rule_controller.run()
     elif mode.lower() == "manual":
         manual_controller = ManualBasedController(node)
