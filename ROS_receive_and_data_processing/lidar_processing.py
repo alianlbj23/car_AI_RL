@@ -5,7 +5,8 @@ def get_smallest_lidar_values(lidar_data):
     """
     將lidar原本360個距離數值區分成n個區域, 每個區域只抓最小的數值
     """
-    chunk_size = len(lidar_data) // 8
+    n = 8
+    chunk_size = len(lidar_data) // n
     min_value_list = []
 
     for i in range(0, len(lidar_data), chunk_size):

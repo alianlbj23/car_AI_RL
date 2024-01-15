@@ -24,3 +24,6 @@ def parse_json_to_dict(json_str):
             coordinates = list(map(float, value.strip('()').split(',')))  
             data[key] = coordinates
     return data    
+
+def get_relative_coordinates(car_pos, target_pos):
+    return [round_to_decimal_places(target_pos[0]-car_pos[0]),round_to_decimal_places(target_pos[1]-car_pos[0])]

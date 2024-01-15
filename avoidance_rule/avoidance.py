@@ -1,3 +1,4 @@
+#  基於8個數值的lidar做的rule
 import numpy as np
 def refined_obstacle_avoidance_with_target_orientation(lidars,
                                                         car_quaternion_1, 
@@ -18,8 +19,12 @@ def refined_obstacle_avoidance_with_target_orientation(lidars,
     # If an obstacle is detected, switch to obstacle avoidance mode
     if obstacle_near:
         front_clear = lidars[0] > safe_distance and lidars[7] > safe_distance
-        left_clear = all(lidar > safe_distance for lidar in lidars[1:4])
-        right_clear = all(lidar > safe_distance for lidar in lidars[4:7])
+        left_clear = all(lidar > safe_distance for lidar in lidars[1:3])
+        right_clear = all(lidar > safe_distance for lidar in lidars[5:7])
+        
+        # front_clear = lidars[15] > safe_distance and lidars[-15] > safe_distance
+        # left_clear = all(lidar > safe_distance for lidar in lidars[15:-15])
+        # right_clear = all(lidar > safe_distance for lidar in lidars[60:75])
         
         # Decide on movement based on clear path
         if front_clear:

@@ -32,12 +32,13 @@ class ManualBasedController:
                 self.node.reset()
                 self.node.publish_to_unity(self.action)
                 _, unity_data = wait_for_data(self.node)
+                print(unity_data['lidar_data'])
                 terminated = (
                     unity_data['car_target_distance'] < 1 or 
                     min(unity_data['lidar_data']) < 0.2
                 )
-                if terminated:
-                    self.node.publish_to_unity_RESET()
+                # if terminated:
+                #     self.node.publish_to_unity_RESET()
             self.root.update()  # 更新 Tkinter 窗口
 
 

@@ -41,11 +41,11 @@ def gym_env_register(AI_node):
     return gym.make("CustomCarEnv-v0", AI_node=AI_node)
 
 def main():
-    mode = "train_rl"
+    mode = "rl"
     if len(sys.argv) >= 2:
         mode = sys.argv[1]
     node, ros_thread = init_ros_node()
-    if mode.lower() == "train_rl":
+    if mode.lower() == "rl":
         env = gym_env_register(node)
         train_model(env)
     elif mode.lower() == "rule":

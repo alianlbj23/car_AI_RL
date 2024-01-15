@@ -7,7 +7,6 @@ def set_csv_format(action, data_dict):
     return data_dict
 
 def save_data_to_csv(data):
-    print(data)
     # 确保有数据要保存
     if not data:
         return
