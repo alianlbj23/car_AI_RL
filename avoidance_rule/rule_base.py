@@ -1,19 +1,25 @@
 from avoidance_rule.avoidance import refined_obstacle_avoidance_with_target_orientation
 # from avoidance_rule.avoidance_90 import refined_obstacle_avoidance_with_target_orientation
-from avoidance_rule.Simulated_Annealing import refined_obstacle_avoidance_with_target_orientation
+from avoidance_rule.Simulated_Annealing import ObstacleAvoidanceController
 import rclpy
 from utils.obs_utils import *
 from csv_store_and_file.csv_store import save_data_to_csv, set_csv_format
 import time
 
 class RuleBasedController:
-    def __init__(self, node):
+    def __init__(self, node, parameter_file='parameters.pkl'):
         self.node = node
         self.data = []
-        self.last_turn_direction = 0  
+        self.last_turn_direction = 0
+        self.controller = ObstacleAvoidanceController()  
+        self.parameter_file = parameter_file
+        try:
+            self.controller.load_parameters(self.parameter_file)
+        except:
+            pass
         
     def rule_action(self, obs_for_avoidance):
-        action = refined_obstacle_avoidance_with_target_orientation(
+        action = self.controller.refined_obstacle_avoidance_with_target_orientation(
             obs_for_avoidance['lidar_data'],
             obs_for_avoidance['car_quaternion'][0],
             obs_for_avoidance['car_quaternion'][1],
@@ -41,5 +47,5 @@ class RuleBasedController:
                 time.sleep(1)
                 self.data = []
                 self.node.publish_to_unity_RESET()
-    # def apply_rules(self):
+                self.controller.save_parameters(self.parameter_file)
     
