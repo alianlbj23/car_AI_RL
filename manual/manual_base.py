@@ -1,6 +1,7 @@
 import rclpy
 from utils.obs_utils import *
 import tkinter as tk
+from utils.rotate_angle import calculate_angle_point
 
 class ManualBasedController:
     def __init__(self, node):
@@ -32,7 +33,13 @@ class ManualBasedController:
                 self.node.reset()
                 self.node.publish_to_unity(self.action)
                 _, unity_data = wait_for_data(self.node)
-                print(unity_data['lidar_data'])
+                target_angle = calculate_angle_point(
+                    unity_data['car_quaternion'][0],
+                    unity_data['car_quaternion'][1],
+                    unity_data['car_pos'],
+                    unity_data['target_pos']
+                )
+                print(target_angle)
                 terminated = (
                     unity_data['car_target_distance'] < 1 or 
                     min(unity_data['lidar_data']) < 0.2

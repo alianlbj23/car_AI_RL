@@ -9,6 +9,7 @@ class RuleBasedController:
     def __init__(self, node):
         self.node = node
         self.data = []
+        self.last_turn_direction = 0  
         
     def rule_action(self, obs_for_avoidance):
         action = refined_obstacle_avoidance_with_target_orientation(
@@ -16,7 +17,7 @@ class RuleBasedController:
             obs_for_avoidance['car_quaternion'][0],
             obs_for_avoidance['car_quaternion'][1],
             obs_for_avoidance['car_pos'],
-            obs_for_avoidance['target_pos']
+            obs_for_avoidance['target_pos'],
         )
         return action
 
@@ -25,6 +26,7 @@ class RuleBasedController:
             self.node.reset()
             _, unity_data = wait_for_data(self.node)
             action = self.rule_action(unity_data)
+            self.last_turn_direction = action
             unity_data = set_csv_format(action, unity_data)
             self.data.append(unity_data)
             

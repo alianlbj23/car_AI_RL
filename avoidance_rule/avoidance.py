@@ -1,12 +1,15 @@
 #  基於8個數值的lidar做的rule
 import numpy as np
+import random
+
 def refined_obstacle_avoidance_with_target_orientation(lidars,
                                                         car_quaternion_1, 
                                                         car_quaternion_2,
                                                         car_pos,
-                                                        target_pos):
-    safe_distance = 0.5  # meters or as per lidar unit
-    angle_tolerance = 5  # degrees, the tolerance for angle alignment
+                                                        target_pos,
+                                                        ):
+    safe_distance = 0.3  # meters or as per lidar unit
+    angle_tolerance = 10  # degrees, the tolerance for angle alignment
 
     # Calculate the smallest angle difference to the target, considering the circular nature of angles
     angle_diff = calculate_angle_point(car_quaternion_1,
@@ -19,31 +22,33 @@ def refined_obstacle_avoidance_with_target_orientation(lidars,
     # If an obstacle is detected, switch to obstacle avoidance mode
     if obstacle_near:
         front_clear = lidars[0] > safe_distance and lidars[7] > safe_distance
-        left_clear = all(lidar > safe_distance for lidar in lidars[1:3])
-        right_clear = all(lidar > safe_distance for lidar in lidars[5:7])
-        
-        # front_clear = lidars[15] > safe_distance and lidars[-15] > safe_distance
-        # left_clear = all(lidar > safe_distance for lidar in lidars[15:-15])
-        # right_clear = all(lidar > safe_distance for lidar in lidars[60:75])
-        
+        left_clear = all(lidar > safe_distance for lidar in lidars[1:4])
+        right_clear = all(lidar > safe_distance for lidar in lidars[4:7])        
         # Decide on movement based on clear path
+        clear_directions = []
         if front_clear:
-            return 0  # Forward
-        elif left_clear:
-            return 1  # Turn left
-        elif right_clear:
-            return 2  # Turn right
+            clear_directions.append(0) 
+        if left_clear:
+            clear_directions.append(1)  # Turn left
+        if right_clear:
+            clear_directions.append(2)  # Turn right
+            
+        if len(clear_directions) > 1:
+            return random.choice(clear_directions)
+        elif len(clear_directions) == 1:
+            return clear_directions[0]
         else:
-            return 3  # No clear path, reverse
+            return random.choice([1, 2])
+        #     return 3  # No clear path, reverse
     else:
         # No obstacle near, align and move towards the target
         if np.abs(angle_diff) > angle_tolerance:
             # Rotate towards target angle
             # 先試著一個方向轉就好
-            if angle_diff < 0:
-                return 2
+            if angle_diff > 0:
+                return 1
             else:
-                return 1 #if (target_angle - current_angle + 360) % 360 < 180 else 2
+                return 2
         else:
             # Move forward as the angle is within tolerance
             return 0  # Forward
@@ -67,13 +72,9 @@ def calculate_angle_point(car_quaternion_1, car_quaternion_2, car_pos, target_po
     car_yaw = get_yaw_from_quaternion(car_quaternion_1, car_quaternion_2)
     direction_vector = get_direction_vector(car_pos, target_pos)
     angle_to_target = get_angle_to_target(car_yaw, direction_vector)
-    angle_diff = angle_to_target - 180
+    angle_diff = (angle_to_target - 180) % 360
+    if angle_diff > 180:
+        angle_diff -= 360   
     return angle_diff
     
 
-# Example use case
-# lidar_readings = [1.5, 1.2, 1.0, 0.8, 1.5, 1.2, 1.0, 1.5]  # example lidar readings
-# current_angle = 0  # example current angle
-# target_angle = 5  # example target angle
-# movement = refined_obstacle_avoidance_with_target_orientation(lidar_readings, current_angle, target_angle)
-# movement
