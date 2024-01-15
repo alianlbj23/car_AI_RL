@@ -1,5 +1,6 @@
 from avoidance_rule.avoidance import refined_obstacle_avoidance_with_target_orientation
 # from avoidance_rule.avoidance_90 import refined_obstacle_avoidance_with_target_orientation
+from avoidance_rule.Simulated_Annealing import refined_obstacle_avoidance_with_target_orientation
 import rclpy
 from utils.obs_utils import *
 from csv_store_and_file.csv_store import save_data_to_csv, set_csv_format
