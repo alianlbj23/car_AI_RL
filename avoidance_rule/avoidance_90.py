@@ -10,7 +10,8 @@ def refined_obstacle_avoidance_with_target_orientation(lidars,
                                                         ):
     safe_distance = 0.3  # meters or as per lidar unit
     angle_tolerance = 10  # degrees, the tolerance for angle alignment
-
+    turn_persistence = 3
+    last_turn_direction = None
     # Calculate the smallest angle difference to the target, considering the circular nature of angles
     angle_diff = calculate_angle_point(car_quaternion_1,
                                        car_quaternion_2,
@@ -43,15 +44,24 @@ def refined_obstacle_avoidance_with_target_orientation(lidars,
     else:
         # No obstacle near, align and move towards the target
         if np.abs(angle_diff) > angle_tolerance:
-            # Rotate towards target angle
-            # 先試著一個方向轉就好
-            if angle_diff > 0:
-                return 1
+            if np.abs(angle_diff) > 0.3:
+                # 检查是否需要改变方向
+                if last_turn_direction is None or turn_persistence == 0:
+                    # 决定新的转向方向
+                    if angle_diff > 0:
+                        turn_direction = 1  # 向左转
+                    else:
+                        turn_direction = 2  # 向右转
+                    last_turn_direction = turn_direction
+                    turn_persistence = 3  # 重置转向持续性计数器
+                else:
+                    turn_direction = last_turn_direction
+                    turn_persistence -= 1  # 减少转向持续性计数器
+                return turn_direction
             else:
-                return 2
+                return 0  # 直行
         else:
-            # Move forward as the angle is within tolerance
-            return 0  # Forward
+            return 0  # 直行
         
 def get_yaw_from_quaternion(z, w):
         """从四元数的 z 和 w 分量中提取偏航角（Y 轴旋转）"""

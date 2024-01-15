@@ -1,57 +1,68 @@
 #  基於8個數值的lidar做的rule
 import numpy as np
 import random
+last_turn_direction = None  # 上一次转向方向
+turn_persistence = 3  # 转向持续性计数器
+bias_counter = 0
+def refined_obstacle_avoidance_with_target_orientation(lidars, car_quaternion_1, car_quaternion_2, car_pos, target_pos):
+    global last_turn_direction, turn_persistence, bias_counter
 
-def refined_obstacle_avoidance_with_target_orientation(lidars,
-                                                        car_quaternion_1, 
-                                                        car_quaternion_2,
-                                                        car_pos,
-                                                        target_pos,
-                                                        ):
-    safe_distance = 0.3  # meters or as per lidar unit
-    angle_tolerance = 10  # degrees, the tolerance for angle alignment
+    safe_distance = 0.35  # 米，或根据激光雷达单位
+    angle_tolerance = 10  # 度，角度对齐的容忍度
 
-    # Calculate the smallest angle difference to the target, considering the circular nature of angles
-    angle_diff = calculate_angle_point(car_quaternion_1,
-                                       car_quaternion_2,
-                                       car_pos,
-                                       target_pos)
+    # 计算与目标的最小角度差
+    angle_diff = calculate_angle_point(car_quaternion_1, car_quaternion_2, car_pos, target_pos)
 
-    # Check if any lidar reading indicates a close obstacle
+    # 检查激光雷达是否指示附近有障碍物
     obstacle_near = any(lidar < safe_distance for lidar in lidars)
-    # If an obstacle is detected, switch to obstacle avoidance mode
+
     if obstacle_near:
         front_clear = lidars[0] > safe_distance and lidars[7] > safe_distance
         left_clear = all(lidar > safe_distance for lidar in lidars[1:4])
-        right_clear = all(lidar > safe_distance for lidar in lidars[4:7])        
-        # Decide on movement based on clear path
+        right_clear = all(lidar > safe_distance for lidar in lidars[4:7])
+
         clear_directions = []
         if front_clear:
-            clear_directions.append(0) 
+            clear_directions.append(0)  # 前进
         if left_clear:
-            clear_directions.append(1)  # Turn left
+            clear_directions.append(1)  # 左转
         if right_clear:
-            clear_directions.append(2)  # Turn right
-            
+            clear_directions.append(2)  # 右转
+
         if len(clear_directions) > 1:
-            return random.choice(clear_directions)
+            if bias_counter % 2 == 0:  # 偶数次，增加向右转的概率
+                turn_choices = [direction for direction in clear_directions if direction != 1]  # 减少左转
+            else:  # 奇数次，增加向左转的概率
+                turn_choices = [direction for direction in clear_directions if direction != 2]  # 减少右转
+
+            # 如果 turn_choices 为空，则使用原来的 clear_directions
+            if not turn_choices:
+                turn_choices = clear_directions
+
+            return random.choice(turn_choices)
         elif len(clear_directions) == 1:
             return clear_directions[0]
         else:
+            # 如果没有清晰的方向，随机选择旋转方向
             return random.choice([1, 2])
-        #     return 3  # No clear path, reverse
+    
     else:
-        # No obstacle near, align and move towards the target
         if np.abs(angle_diff) > angle_tolerance:
-            # Rotate towards target angle
-            # 先試著一個方向轉就好
-            if angle_diff > 0:
-                return 1
+            if last_turn_direction is None or turn_persistence == 0:
+                if angle_diff > 0:
+                    turn_direction = 1  # 向左转
+                else:
+                    turn_direction = 2  # 向右转
+                last_turn_direction = turn_direction
+                turn_persistence = 3
             else:
-                return 2
+                turn_direction = last_turn_direction
+                turn_persistence -= 1
+            return turn_direction
         else:
-            # Move forward as the angle is within tolerance
-            return 0  # Forward
+            return 0  # 直行
+    bias_counter += 1
+
         
 def get_yaw_from_quaternion(z, w):
         """从四元数的 z 和 w 分量中提取偏航角（Y 轴旋转）"""
