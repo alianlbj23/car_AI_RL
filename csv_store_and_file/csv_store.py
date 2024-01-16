@@ -7,25 +7,24 @@ def set_csv_format(action, data_dict):
     return data_dict
 
 def save_data_to_csv(data):
-    # 确保有数据要保存
+    # 確定有數據
     if not data:
         return
 
-    # 使用当前时间戳创建文件名
+    # 用時間創文件名稱
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = f'collected_data_{timestamp}.csv'
 
-    # 指定保存路径
-    current_dir = os.getcwd()  # 获取当前目录
-    path = os.path.join(current_dir, 'training_data')  # 创建目标文件夹路径
+    # 指定路徑
+    current_dir = os.getcwd()  # 抓現在目錄
+    path = os.path.join(current_dir, 'training_data')  # 創文件名稱
 
-    # 检查文件夹是否存在，如果不存在则创建
     if not os.path.exists(path):
         os.makedirs(path)
 
     full_path = os.path.join(path, filename)
 
-    keys = data[0].keys()  # 获取字典的键作为列标题
+    keys = data[0].keys()  # 取字典的key當作title
 
     with open(full_path, 'w', newline='') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=keys)

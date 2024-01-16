@@ -42,7 +42,7 @@ class ObstacleAvoidanceController:
             # left_clear = all(lidar > safe_distance for lidar in lidars[1:4])
             # right_clear = all(lidar > safe_distance for lidar in lidars[4:7])
             
-            #  90E個lidar
+            #  90個lidar
             front_clear = min(lidars[:16]) > safe_distance and min(lidars[-15:]) > safe_distance
             left_clear = all(lidar > safe_distance for lidar in lidars[16:46])
             right_clear = all(lidar > safe_distance for lidar in lidars[56:86])

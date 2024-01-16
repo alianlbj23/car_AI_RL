@@ -1,4 +1,5 @@
 #  給env用的tools
+#  主要給RL內的env用的tools
 import numpy as np
 
 def data_dict_pop(data_dict):

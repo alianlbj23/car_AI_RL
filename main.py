@@ -44,12 +44,19 @@ def main():
     mode = "rl"
     if len(sys.argv) >= 2:
         mode = sys.argv[1]
+        
     node, ros_thread = init_ros_node()
+    
     if mode.lower() == "rl":
         env = gym_env_register(node)
         train_model(env)
     elif mode.lower() == "rule":
-        rule_controller = RuleBasedController(node, './Simulated_Annealing_model/parameters.pkl')
+        rule_controller = RuleBasedController(
+            node, 
+            './Simulated_Annealing_model/parameters.pkl',
+            load_parameters=True,
+            save_to_csv=True
+            )
         rule_controller.run()
     elif mode.lower() == "manual":
         manual_controller = ManualBasedController(node)
