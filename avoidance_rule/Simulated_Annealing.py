@@ -45,8 +45,7 @@ class ObstacleAvoidanceController:
             #  90個lidar
             front_clear = min(lidars[:16]) > safe_distance and min(lidars[-15:]) > safe_distance
             left_clear = all(lidar > safe_distance for lidar in lidars[16:46])
-            right_clear = all(lidar > safe_distance for lidar in lidars[56:86])
-            
+            right_clear = all(lidar > safe_distance for lidar in lidars[-45:-15])
             clear_directions = []
             if front_clear:
                 clear_directions.append(0)  # 前進

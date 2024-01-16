@@ -34,7 +34,9 @@ def transfer_obs(obs):
         "car_target_distance": float(car_target_distance),
         "car_quaternion": trans_to_float(car_quaternion),
         "lidar_data": trans_to_float(lidar_data),
-        "relative_coordinates": trans_to_float([target_pos[0]-car_pos[0],target_pos[1]-car_pos[0]])
+        "relative_coordinates": trans_to_float(round_to_decimal_places(
+                                                [target_pos[0]-car_pos[0],target_pos[1]-car_pos[0]])
+                                               )
     }
     
     return lidar_no_element_detect, state_dict
