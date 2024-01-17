@@ -8,7 +8,9 @@ from RL.custom_callback import CustomCallback
 from avoidance_rule.rule_base import RuleBasedController
 from manual.manual_base import ManualBasedController
 import sys
+from supervised.LSTM_inference import LSTMInference
 
+#  或許之後要改成以node為主, 所以根本不用thread
 def init_ros_node():
     '''node初始化並開一個thread跑ros node'''
     rclpy.init()
@@ -17,7 +19,6 @@ def init_ros_node():
     thread.start()
     return node, thread
 
-#  
 def load_or_create_model(env, model_path):
     '''讀取model或是重新train一個'''
     try:
@@ -61,6 +62,16 @@ def main():
     elif mode.lower() == "manual":
         manual_controller = ManualBasedController(node)
         manual_controller.run()
+    # elif mode.lower() == "lstm":
+    #     lstm_controller = LSTMInferenceController(
+    #     node=node,
+    #     model_path='final_model.pth',
+    #     input_size=100,  # 输入尺寸
+    #     hidden_layer_size=100,  # 隐藏层尺寸
+    #     output_size=1,  # 输出尺寸
+    #     scaler_params=([0, 0, 0], [1, 1, 1]),  # 标准化器参数
+    #     time_steps=3  # 时间步长
+    # )
     else:
         print("Invalid mode. Please use 'RL' or 'rule'.")
         rclpy.shutdown()

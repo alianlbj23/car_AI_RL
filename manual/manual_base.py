@@ -4,6 +4,7 @@ import tkinter as tk
 from utils.rotate_angle import calculate_angle_point
 import time
 from csv_store_and_file.csv_store import save_data_to_csv, set_csv_format
+import sys
 
 class ManualBasedController:
     def __init__(self, node, save_to_csv=True):
@@ -27,7 +28,13 @@ class ManualBasedController:
             self.action = 2  # 右轉
         elif event.keysym == 's':
             self.action = 3  # 後退
-
+        elif event.keysym == 'q':
+            self.quit_program()
+            
+    def quit_program(self):
+        self.root.destroy() 
+        sys.exit()  
+        
     def on_key_release(self, event):
         self.action = 4  # 停止
 
@@ -53,5 +60,3 @@ class ManualBasedController:
                 elif min(unity_data['lidar_data']) < 0.2:
                     self.reset_controller()
             self.root.update()  # 更新 Tkinter 窗口
-
-

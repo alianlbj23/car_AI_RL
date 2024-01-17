@@ -9,6 +9,6 @@ class LSTMModel(nn.Module):
         self.linear = nn.Linear(hidden_layer_size, output_size)
 
     def forward(self, input_seq):
-        lstm_out, _ = self.lstm(input_seq.view(len(input_seq), 1, -1))
+        lstm_out, _ = self.lstm(input_seq)
         predictions = self.linear(lstm_out.view(len(input_seq), -1))
         return predictions[-1]

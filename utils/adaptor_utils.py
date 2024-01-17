@@ -19,6 +19,7 @@ def parse_json_to_dict(json_str):
     except json.JSONDecodeError:
         return {}
 
+    #  這邊的資料傳輸好的話可以不用搞字串處理
     for key, value in data.items():
         if isinstance(value, str) and value.startswith('(') and value.endswith(')'):
             coordinates = list(map(float, value.strip('()').split(',')))  
