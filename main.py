@@ -1,5 +1,5 @@
 import gymnasium as gym
-from ROS_receive_and_data_processing.AI_node import AiNode
+from ROS_receive_and_data_processing.AI_node import AI_node
 import rclpy
 import threading
 from stable_baselines3 import PPO
@@ -13,7 +13,7 @@ from supervised.LSTM_inference import LSTMInference
 def init_ros_node():
     '''node初始化並開一個thread跑ros node'''
     rclpy.init()
-    node = AiNode()
+    node = AI_node()
     thread = threading.Thread(target=rclpy.spin, args=(node,))
     thread.start()
     return node, thread

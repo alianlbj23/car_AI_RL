@@ -2,7 +2,7 @@ import random
 from utils.rotate_angle import calculate_angle_point
 import pickle
 from ROS_receive_and_data_processing.config import FRONT_LIDAR_INDICES, LEFT_LIDAR_INDICES, RIGHT_LIDAR_INDICES
-
+import os
 class ObstacleAvoidanceController:
     def __init__(self, initial_temperature=1.0, cooling_rate=0.95):
         self.temperature = initial_temperature
@@ -19,7 +19,13 @@ class ObstacleAvoidanceController:
             self.turn_persistence = parameters['turn_persistence']
             self.bias_counter = parameters['bias_counter']
             
+    def check_file(self, filename):
+        directory = os.path.dirname(filename)
+        if not os.path.exists(directory):
+            os.makedirs(directory, exist_ok=True)
+            
     def save_parameters(self, filename):
+        self.check_file(filename)
         with open(filename, 'wb') as file:
             pickle.dump({
                 'temperature': self.temperature,

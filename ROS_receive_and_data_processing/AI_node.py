@@ -6,7 +6,7 @@ from std_msgs.msg import String
 from std_msgs.msg import Float32MultiArray
 from ROS_receive_and_data_processing.config import ACTION_MAPPINGS
 
-class AiNode(Node):
+class AI_node(Node):
     def __init__(self):
         super().__init__("aiNode")
         self.get_logger().info("Ai start")#ros2Ai #unity2Ros        

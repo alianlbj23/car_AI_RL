@@ -1,8 +1,8 @@
 # config.py
 
-# 定義動作的映射
-vel = 600.0
-rotate_vel = 700.0
+# vel和rotate_vel是mapping到Unity輪子轉動單位(度/秒)
+vel = 0.5
+rotate_vel = 5.0
 #  這邊可以自行定義動作
 ACTION_MAPPINGS = {
     0: [vel, vel, vel, vel],  # 前進

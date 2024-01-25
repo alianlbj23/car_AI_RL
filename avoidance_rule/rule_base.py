@@ -1,5 +1,3 @@
-from avoidance_rule.avoidance import refined_obstacle_avoidance_with_target_orientation
-# from avoidance_rule.avoidance_90 import refined_obstacle_avoidance_with_target_orientation
 from avoidance_rule.Simulated_Annealing import ObstacleAvoidanceController
 import rclpy
 from utils.obs_utils import *
@@ -46,7 +44,7 @@ class RuleBasedController:
             _, unity_data = wait_for_data(self.node)
             action = self.rule_action(unity_data)
             unity_data = set_csv_format(action, unity_data) #  新增action到目前的state, 後續用於寫入csv
-            self.store_data()
+            self.store_data(unity_data)
             self.node.publish_to_unity(action)
             
             #  先檢查是否到達目標
