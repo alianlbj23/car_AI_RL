@@ -4,7 +4,7 @@ from rclpy.node import Node
 import rclpy
 from std_msgs.msg import String
 from std_msgs.msg import Float32MultiArray
-
+from ROS_receive_and_data_processing.config import ACTION_MAPPINGS
 
 class AiNode(Node):
     def __init__(self):
@@ -39,10 +39,13 @@ class AiNode(Node):
         self.latest_data = None
         self.publisher_2_unity_action_flag = 0
 
-    def publish_to_unity(self, action): #  送動作用
+    def publish_to_unity(self, action_code): #  送動作用
+        '''
+        0是前進 1是左轉 2是右轉 3是後退 4是停止
+        '''
         if self.publisher_2_unity_action_flag == 1:
             msg = Float32MultiArray()
-            action = [float(action)]
+            action = ACTION_MAPPINGS.get(action_code, "invalid")
             msg.data = action
             self.publisher_AINode_2_unity_thu_ROSbridge.publish(msg)
     

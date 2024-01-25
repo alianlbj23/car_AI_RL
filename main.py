@@ -10,7 +10,6 @@ from manual.manual_base import ManualBasedController
 import sys
 from supervised.LSTM_inference import LSTMInference
 
-#  或許之後要改成以node為主, 所以根本不用thread
 def init_ros_node():
     '''node初始化並開一個thread跑ros node'''
     rclpy.init()

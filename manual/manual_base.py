@@ -51,7 +51,12 @@ class ManualBasedController:
                 _, unity_data = wait_for_data(self.node)
                 unity_data = set_csv_format(self.action, unity_data) #  存csv用
                 self.data.append(unity_data)
-                
+                angle_diff = calculate_angle_point(
+                    unity_data['car_quaternion'][0], 
+                    unity_data['car_quaternion'][1], 
+                    unity_data['car_pos'], 
+                    unity_data['target_pos']
+                )
                 if unity_data['car_target_distance'] < 1:
                     if self.save_to_csv:
                         save_data_to_csv(self.data)

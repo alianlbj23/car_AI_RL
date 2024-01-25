@@ -24,6 +24,7 @@ def transfer_obs(obs):
     
     if len(wheel_angular_vel) != 2:
         print("error")
+        
     '''
     這邊定義state, reward計算也會基於以下這些state去計算, 要改RL收到的obs可以在
     utils的obs_utils裡面data_dict_pop做修改
