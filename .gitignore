@@ -1,2 +1,9 @@
 /__pycache__
 /Model
+/RL/__pycache__
+/avoidance_rule/__pycache__
+/csv_store_and_file/__pycache__
+/manual/__pycache__
+/utils/__pycache__
+/training_data
+/supervised/__pycache__
