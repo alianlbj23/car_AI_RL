@@ -57,11 +57,11 @@ class ManualBasedController:
                     unity_data['car_pos'], 
                     unity_data['target_pos']
                 )
-                if unity_data['car_target_distance'] < 1:
-                    if self.save_to_csv:
-                        save_data_to_csv(self.data)
-                    self.reset_controller()
+                # if unity_data['car_target_distance'] < 1:
+                #     if self.save_to_csv:
+                #         save_data_to_csv(self.data)
+                #     self.reset_controller()
                     
-                elif min(unity_data['lidar_data']) < 0.2:
-                    self.reset_controller()
+                # elif min(unity_data['lidar_data']) < 0.2:
+                #     self.reset_controller()
             self.root.update()  # 更新 Tkinter 窗口
