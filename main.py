@@ -1,3 +1,4 @@
+#  尚未測試
 import gymnasium as gym
 from ROS_receive_and_data_processing.AI_node import AI_node
 import rclpy
@@ -8,7 +9,7 @@ from RL.custom_callback import CustomCallback
 from avoidance_rule.rule_base import RuleBasedController
 from manual.manual_base import ManualBasedController
 import sys
-from supervised.LSTM_inference import LSTMInference
+# from supervised.LSTM_inference import LSTMInference
 
 def init_ros_node():
     '''node初始化並開一個thread跑ros node'''
@@ -39,9 +40,13 @@ def gym_env_register(AI_node):
         entry_point='RL.env:CustomCarEnv',  # 模組名稱:類名稱
     )  
     return gym.make("CustomCarEnv-v0", AI_node=AI_node)
-
+# mode_executor={
+#     "rl":rl.run,
+#     0
+# }
 def main():
     mode = "rl"
+    # mode_executor[mode]()
     if len(sys.argv) >= 2:
         mode = sys.argv[1]
         
@@ -53,24 +58,12 @@ def main():
     elif mode.lower() == "rule":
         rule_controller = RuleBasedController(
             node, 
-            './Simulated_Annealing_model/parameters.pkl',
-            load_parameters=True,
-            save_to_csv=True
+            save_to_csv=False
             )
         rule_controller.run()
     elif mode.lower() == "manual":
         manual_controller = ManualBasedController(node)
         manual_controller.run()
-    elif mode.lower() == "lstm":
-        lstm_controller = LSTMInferenceController(
-        node=node,
-        model_path='final_model.pth',
-        input_size=100,  # 输入尺寸
-        hidden_layer_size=100,  # 隐藏层尺寸
-        output_size=1,  # 输出尺寸
-        scaler_params=([0, 0, 0], [1, 1, 1]),  # 标准化器参数
-        time_steps=3  # 时间步长
-    )
     else:
         print("Invalid mode. Please use 'RL' or 'rule'.")
         rclpy.shutdown()

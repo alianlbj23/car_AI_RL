@@ -1,8 +1,7 @@
 import random
 from utils.rotate_angle import calculate_angle_point
-import pickle
 from ROS_receive_and_data_processing.config import FRONT_LIDAR_INDICES, LEFT_LIDAR_INDICES, RIGHT_LIDAR_INDICES
-import os
+
 class ObstacleAvoidanceController:
     def __init__(self, initial_temperature=1.0, cooling_rate=0.95):
         self.temperature = initial_temperature
@@ -10,45 +9,15 @@ class ObstacleAvoidanceController:
         self.last_turn_direction = None
         self.turn_persistence = 3
         self.bias_counter = 0
-    
-    def load_parameters(self, filename):
-        with open(filename, 'rb') as file:
-            parameters = pickle.load(file)
-            self.temperature = parameters['temperature']
-            self.last_turn_direction = parameters['last_turn_direction']
-            self.turn_persistence = parameters['turn_persistence']
-            self.bias_counter = parameters['bias_counter']
-            
-    def check_file(self, filename):
-        directory = os.path.dirname(filename)
-        if not os.path.exists(directory):
-            os.makedirs(directory, exist_ok=True)
-            
-    def save_parameters(self, filename):
-        self.check_file(filename)
-        with open(filename, 'wb') as file:
-            pickle.dump({
-                'temperature': self.temperature,
-                'last_turn_direction': self.last_turn_direction,
-                'turn_persistence': self.turn_persistence,
-                'bias_counter': self.bias_counter
-            }, file)
             
     def refined_obstacle_avoidance_with_target_orientation(self, lidars, car_quaternion_1, car_quaternion_2, car_pos, target_pos):
-        # print("temperature : ", self.temperature)
         safe_distance = 0.7
         angle_tolerance = 10  # degrees, tolerance for angle alignment
 
-        angle_diff = calculate_angle_point(car_quaternion_1, car_quaternion_2, car_pos, target_pos)
+        angle_diff = calculate_angle_point(car_quaternion_1, car_quaternion_2, car_pos, target_pos) #  計算面向目標角度
         obstacle_near = any(lidar < safe_distance for lidar in lidars)
         
-        if obstacle_near:
-            # 找安全方向
-            #  8個lidar的版本
-            # front_clear = lidars[0] > safe_distance and lidars[7] > safe_distance
-            # left_clear = all(lidar > safe_distance for lidar in lidars[1:4])
-            # right_clear = all(lidar > safe_distance for lidar in lidars[4:7])
-            
+        if obstacle_near:            
             #  90個lidar
             front_clear = all(lidars[i] > safe_distance for i in FRONT_LIDAR_INDICES)
             left_clear = all(lidars[i] > safe_distance for i in LEFT_LIDAR_INDICES)

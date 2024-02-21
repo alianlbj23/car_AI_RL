@@ -1,9 +1,10 @@
 # config.py
 
-# vel和ro
-# tate_vel是mapping到Unity輪子轉動單位(度/秒)
-vel = 3.0
-rotate_vel = 5.0
+'''
+vel、rotate_vel
+'''
+vel = 10.0
+rotate_vel = 10.0
 #  這邊可以自行定義動作
 ACTION_MAPPINGS = {
     0: [vel, vel, vel, vel],  # 前進
@@ -13,6 +14,9 @@ ACTION_MAPPINGS = {
     4: [0.0,0.0,0.0,0.0]      # 停止
 }
 
+'''
+以下為處理lidar
+'''
 LIDAR_RANGE = 90
 FRONT_LIDAR_INDICES = list(range(0, 16)) + list(range(-15, 0)) #0~16個和-15到0的LIDAR RANGE
 LEFT_LIDAR_INDICES = list(range(16, 46))
