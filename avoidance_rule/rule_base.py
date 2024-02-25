@@ -2,7 +2,7 @@ from avoidance_rule.Simulated_Annealing import ObstacleAvoidanceController
 import rclpy
 from utils.obs_utils import *
 from csv_store_and_file.csv_store import save_data_to_csv, set_csv_format
-# from ROS_receive_and_data_processing.config import 
+from ROS_receive_and_data_processing.config import TARGET_DISTANCE, WALL_DISTANCE
 import time
 
 class RuleBasedController:
@@ -49,13 +49,13 @@ class RuleBasedController:
             self.store_data(unity_data)
             self.node.publish_to_unity(action)
             
-            #  先檢查是否到達目標
-            if unity_data['car_target_distance'] < 1:
+            #  檢查是否到達目標
+            if unity_data['car_target_distance'] < TARGET_DISTANCE:
                 if self.save_to_csv:
                     save_data_to_csv(self.data)
                 self.reset_controller()
                 
             #  檢查是否撞到牆壁
-            elif min(unity_data['lidar_data']) < 0.2:
+            elif min(unity_data['lidar_data']) < WALL_DISTANCE:
                 self.reset_controller()
     
