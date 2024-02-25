@@ -1,3 +1,5 @@
+#  用於計算車頭頭面向目標角度
+
 import numpy as np
 def get_yaw_from_quaternion(z, w):
     '''四位數的z、w取得偏行角'''
