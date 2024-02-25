@@ -18,10 +18,7 @@ class RuleBasedController:
         '''
         action = self.controller.refined_obstacle_avoidance_with_target_orientation(
             obs_for_avoidance['lidar_data'],
-            obs_for_avoidance['car_quaternion'][0],
-            obs_for_avoidance['car_quaternion'][1],
-            obs_for_avoidance['car_pos'],
-            obs_for_avoidance['target_pos'],
+            obs_for_avoidance['angle_diff']
         )
         return action
 
@@ -40,7 +37,7 @@ class RuleBasedController:
     def run(self):
         while rclpy.ok():
             self.node.reset()
-            _, unity_data = wait_for_data(self.node)
+            unity_data = wait_for_data(self.node)
             
             #  這邊放你的cool algorithm
             action = self.rule_action(unity_data)
