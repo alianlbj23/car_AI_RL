@@ -15,9 +15,21 @@ ACTION_MAPPINGS = {
 }
 
 '''
-以下為處理lidar
+LIDAR_RANGE : 設定lidar要有幾個偵測
+FRONT_LIDAR_INDICES : 車子偵測前面障礙物的lidar range
+LEFT_LIDAR_INDICES : 車子偵測左邊障礙物的lidar range
+RIGHT_LIDAR_INDICES : 車子偵測右邊障礙物的lidar range
 '''
 LIDAR_RANGE = 90
 FRONT_LIDAR_INDICES = list(range(0, 16)) + list(range(-15, 0)) #0~16個和-15到0的LIDAR RANGE
 LEFT_LIDAR_INDICES = list(range(16, 46))
 RIGHT_LIDAR_INDICES = list(range(-45, -15)) 
+
+'''
+OBSTACLE_DISTANCE : 開始閃避障礙物的距離(公尺)
+WALL_DISTANCE : 判定為撞到牆壁的距離
+TARGET_DISTANCE : 判定為成功到達目標的距離
+'''
+OBSTACLE_DISTANCE = 0.7
+WALL_DISTANCE = 0.2
+TARGET_DISTANCE = 1
