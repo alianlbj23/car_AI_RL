@@ -1,6 +1,6 @@
 import random
 from utils.rotate_angle import calculate_angle_point
-from ROS_receive_and_data_processing.config import FRONT_LIDAR_INDICES, LEFT_LIDAR_INDICES, RIGHT_LIDAR_INDICES
+from ROS_receive_and_data_processing.config import FRONT_LIDAR_INDICES, LEFT_LIDAR_INDICES, RIGHT_LIDAR_INDICES, OBSTACLE_DISTANCE
 
 class ObstacleAvoidanceController:
     def __init__(self, initial_temperature=1.0, cooling_rate=0.95):
@@ -10,11 +10,11 @@ class ObstacleAvoidanceController:
         self.turn_persistence = 3
         self.bias_counter = 0
             
-    def refined_obstacle_avoidance_with_target_orientation(self, lidars, car_quaternion_1, car_quaternion_2, car_pos, target_pos):
-        safe_distance = 0.7
+    def refined_obstacle_avoidance_with_target_orientation(self, lidars, angle_diff):
+        safe_distance = OBSTACLE_DISTANCE
         angle_tolerance = 10  # degrees, tolerance for angle alignment
 
-        angle_diff = calculate_angle_point(car_quaternion_1, car_quaternion_2, car_pos, target_pos) #  計算面向目標角度
+        angle_diff = angle_diff #  計算面向目標角度
         obstacle_near = any(lidar < safe_distance for lidar in lidars)
         
         if obstacle_near:            
