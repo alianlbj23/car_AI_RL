@@ -1,4 +1,4 @@
-#  將unity的資料轉換成python可以處理的格式
+#  這邊專門將unity的資料轉換成python可以處理的格式
 import json
 
 def round_to_decimal_places(data_list, decimal_places=3):
