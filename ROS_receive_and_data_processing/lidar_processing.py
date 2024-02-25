@@ -5,7 +5,7 @@ from ROS_receive_and_data_processing.config import LIDAR_RANGE
 
 def get_smallest_lidar_values(lidar_data):
     """
-    將lidar原本360個距離數值區分成n個區域, 每個區域只抓最小的數值
+    將lidar原本360個距離數值區分成config設定的n個區域, 每個區域只抓最小的數值
     """
     n = LIDAR_RANGE
     chunk_size = len(lidar_data) // n
@@ -16,15 +16,22 @@ def get_smallest_lidar_values(lidar_data):
         min_value = min(chunk)
         min_value_list.append(min_value)
 
-    return min_value_list   
+    return min_value_list
 
 def lidar_processing(obs):
-    '''將lidar資料過濾後並取到小數第3位'''
+    '''
+    將lidar資料過濾成n筆後並取到小數第3位
+
+    Args:
+        Unity傳來的state
+
+    Returns:
+        list of float : n筆lidar偵測距離數值(n可於config做修改)
+        int(An integer representing a boolean value. It can be either 0 or 1) : 判斷有無收到lidar data
+    '''
     lidar_data = obs.get('ROS2Range', [])
     lidar_no_element_detect = int(bool(lidar_data)) #  判斷有沒有收到lidar資料
     lidar_data_direction = obs['ROS2RangePosition'] #  因為都沒用到lidar的vector，若有需要可自行使用
     lidar_data = get_smallest_lidar_values(lidar_data)
     lidar_data = round_to_decimal_places(lidar_data)
     return lidar_data, lidar_no_element_detect
-    
-    
