@@ -1,23 +1,8 @@
 #  reward_cal的計算工具
 import numpy as np
-
 #  處理偏行角計分 (180 +- 30 可以加分)
-def get_yaw_from_quaternion(z, w):
-    '''從四位數的z、w算出偏航角'''
-    return np.degrees(2 * np.arctan2(z, w))
-    
-def get_direction_vector(current_position, target_position):
-    '''計算現在位置指向目標的向量'''
-    return np.array(target_position) - np.array(current_position)
 
-def get_angle_to_target(car_yaw, direction_vector):
-    '''計算car車頭與target之間的角度差'''
-    target_yaw = np.arctan2(direction_vector[1], direction_vector[0])
-    angle_diff = target_yaw - np.radians(car_yaw)
-
-    return (np.degrees(angle_diff)) % 360
-
-def calculate_angle_point(car_quaternion_1, car_quaternion_2, car_pos, target_pos):
+def calculate_angle_point(angle_diff):
     '''透過計算車頭和目標的角度差給予reward'''
     car_yaw = get_yaw_from_quaternion(car_quaternion_1, car_quaternion_2)
     direction_vector = get_direction_vector(car_pos, target_pos)
