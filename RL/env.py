@@ -45,7 +45,7 @@ class CustomCarEnv(gym.Env):
         )
         return self.state, reward, terminated, False, {}
 
-    def reset(self,seed=None, options=None):
+    def reset(self, seed=None, options=None):
         self.AI_node.publish_to_unity_RESET() #  送結束訊後給unity
         self.AI_node.reset()
         unity_data_reset_state, _ = wait_for_data(self.AI_node)
