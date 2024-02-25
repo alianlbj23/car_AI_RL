@@ -48,7 +48,7 @@ class ManualBasedController:
             if self.action != -1:
                 self.node.reset()
                 self.node.publish_to_unity(self.action)
-                _, unity_data = wait_for_data(self.node)
+                unity_data = wait_for_data(self.node)
                 unity_data = set_csv_format(self.action, unity_data) #  存csv用
                 self.data.append(unity_data)
                 angle_diff = calculate_angle_point(
